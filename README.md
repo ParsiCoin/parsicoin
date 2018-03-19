@@ -40,9 +40,9 @@ http://www.cmake.org/
 
 http://www.boost.org/
 
-To build, change to a directory where this file is located, and run this commands: 
+To build, change to a directory where this file is located, and run this commands (for MSVS 2015): 
 
-mkdir build && cd build && cmake .. -G "Visual Studio 12 Win64" ..
+mkdir build && cd build && cmake .. -G "Visual Studio 14 Win64" ..
 
 And then do the Build via Visual Studio.
 
