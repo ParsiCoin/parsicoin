@@ -552,7 +552,7 @@ namespace CryptoNote {
 		// Loop through N most recent blocks.
 		for (int64_t i = 1; i <= N; i++) {
 			solveTime = static_cast<int64_t>(timestamps[i]) - static_cast<int64_t>(timestamps[i - 1]);
-			solveTime =  std::max<int64_t>(solveTime, (-static_cast<int64_t>(CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT));
+			solveTime = std::min<int64_t>((T * 7), std::max<int64_t>(solveTime, (-7 * T)));
 			difficulty = cumulativeDifficulties[i] - cumulativeDifficulties[i - 1];
 			LWMA += solveTime * i / k;
 			sum_inverse_D += 1 / static_cast<double_t>(difficulty);
