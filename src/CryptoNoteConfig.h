@@ -11,9 +11,9 @@ const size_t   CRYPTONOTE_MAX_BLOCK_BLOB_SIZE                = 500000000;
 const size_t   CRYPTONOTE_MAX_TX_SIZE                        = 1000000000;
 const uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX       = 0xf5; // addresses start with "h"
 const size_t   CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW          = 6;
-const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT            = DIFFICULTY_TARGET * 7;
+const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT            = DIFFICULTY_TARGET * 500;
 
-const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW             = 60;
+const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW             = 11;
 
 // MONEY_SUPPLY - total number coins to be generated
 const uint64_t MONEY_SUPPLY                                  = UINT64_C(858986905600000000);
