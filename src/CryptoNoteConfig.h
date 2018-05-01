@@ -56,7 +56,7 @@ const size_t   FUSION_TX_MAX_SIZE                            = CRYPTONOTE_BLOCK_
 const size_t   FUSION_TX_MIN_INPUT_COUNT                     = 12;
 const size_t   FUSION_TX_MIN_IN_OUT_COUNT_RATIO              = 4;
 
-const uint32_t UPGRADE_HEIGHT_V2                             = 50000;
+const uint32_t UPGRADE_HEIGHT_V2                             = 30000;
 const uint32_t UPGRADE_HEIGHT_V3                             = 100000; // that may change later
 const unsigned UPGRADE_VOTING_THRESHOLD                      = 90; // percent
 const uint32_t UPGRADE_VOTING_WINDOW                         = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY;  // blocks
@@ -125,7 +125,7 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {10000,	"6df47fd2acf43f49e0822399f8593039bffd5656c00c91497dca7789eb168f14" },
   {15000,	"b0dac27b747f9d090dc49c2ea9a5e8434a74df7ae6118d6ccd83c6235f7e95c7" },
   {23000,	"0e165eb15b7dd544591d343674d20682a30f699c290b6dd7c49b6156578affe5" },
-  {27000,	"8ea1d2bab146b404afdffe454c005031fb2201466873e7222e38af57933058f2" },
+  {27500,	"fba62feebe191b8e76bac837640c80c1d02486e8e9e497533ea7e16448dbd513" },
 };
 
 } // CryptoNote
