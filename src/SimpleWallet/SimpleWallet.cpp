@@ -718,7 +718,7 @@ bool simple_wallet::init(const boost::program_options::variables_map& vm)
 		std::cout << "O - open wallet\n";
 		std::cout << "G - generate new wallet\n";
 		std::cout << "I - import wallet from keys\n";
-		std::cout << "R - restore backup/paperwallet\n";
+		std::cout << "R - restore backup\n";
 		std::cout << "T - import tracking wallet\n";
 		std::cout << "E - exit\n";
 		
