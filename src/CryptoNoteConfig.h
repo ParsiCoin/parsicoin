@@ -113,6 +113,7 @@ const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1
 const char* const SEED_NODES[] = { 
   "seednode1.parsicoin.net:17230",
   "seednode2.parsicoin.net:17230",
+  "seednode3.parsicoin.net:17230",
 };
 
 struct CheckpointData {
