@@ -1,6 +1,7 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2016-2018  zawy12
 // Copyright (c) 2016-2018, The Karbowanec developers
+// Copyright (c) 2018, The Parsicoin developers
 //
 // This file is part of Bytecoin.
 //
@@ -560,7 +561,7 @@ namespace CryptoNote {
 
 		// Keep LWMA sane in case something unforeseen occurs.
 		if (static_cast<int64_t>(boost::math::round(LWMA)) < T / 4)
-			LWMA = static_cast<double>(T / 4);
+			LWMA = static_cast<double>(T) / 4;
 
 		harmonic_mean_D = N / sum_inverse_D * adjust;
 		nextDifficulty = harmonic_mean_D * T / LWMA;
