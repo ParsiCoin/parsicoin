@@ -532,8 +532,8 @@ namespace CryptoNote {
 		const size_t N = CryptoNote::parameters::DIFFICULTY_WINDOW_V3 - 1;
 
 		if (timestamps.size() > N + 1) {
-			timestamps.resize(N + 1);
-			cumulativeDifficulties.resize(N + 1);
+			timestamps.erase(timestamps.begin(), timestamps.end() - N - 1);
+			cumulativeDifficulties.erase(cumulativeDifficulties.begin(), cumulativeDifficulties.end() - N - 1);
 		}
 		size_t n = timestamps.size();
 		assert(n == cumulativeDifficulties.size());
