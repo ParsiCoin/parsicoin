@@ -82,11 +82,11 @@ std::string DaemonCommandsHandler::get_commands_str()
 }
 
 //--------------------------------------------------------------------------------
-+std::string DaemonCommandsHandler::get_mining_speed(uint32_t hr) {
-+  if (hr>1e9) return (boost::format("%.2f GH/s") % (hr / 1e9)).str();
-+  if (hr>1e6) return (boost::format("%.2f MH/s") % (hr / 1e6)).str();
-+  if (hr>1e3) return (boost::format("%.2f kH/s") % (hr / 1e3)).str();
-+  return (boost::format("%.0f H/s") % hr).str();
+std::string DaemonCommandsHandler::get_mining_speed(uint32_t hr) {
+  if (hr>1e9) return (boost::format("%.2f GH/s") % (hr / 1e9)).str();
+  if (hr>1e6) return (boost::format("%.2f MH/s") % (hr / 1e6)).str();
+  if (hr>1e3) return (boost::format("%.2f kH/s") % (hr / 1e3)).str();
+  return (boost::format("%.0f H/s") % hr).str();
 }
 
 //--------------------------------------------------------------------------------
