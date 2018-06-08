@@ -195,16 +195,6 @@ int main(int argc, char* argv[])
       return 0;
     }
 
-	std::cout <<
-"\n								\n"
-" __________                     .___________        .__        \n"
-" \______   \_____ _______  _____|__\_   ___ \  ____ |__| ____  \n"
-" |     ___/\__  \\_  __ \/  ___/  /    \  \/ /  _ \|  |/    \ 	\n"
-" |    |     / __ \|  | \/\___ \|  \     \___(  <_> )  |   |  \	\n"
-" |____|    (____  /__|  /____  >__|\______  /\____/|__|___|  /	\n"
-"                \/           \/           \/               \/ 	\n"
-"                                                   		\n" << ENDL;
-
     logger(INFO) << "Module folder: " << argv[0];
 
     bool testnet_mode = command_line::get_arg(vm, arg_testnet_on);
