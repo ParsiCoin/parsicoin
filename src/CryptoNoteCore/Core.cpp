@@ -128,10 +128,6 @@ size_t core::get_alternative_blocks_count() {
   return m_blockchain.getAlternativeBlocksCount();
 }
 
-std::time_t core::getStartTime() const {
-  return start_time;
-}
-
   //-----------------------------------------------------------------------------------------------
 bool core::init(const CoreConfig& config, const MinerConfig& minerConfig, bool load_existing) {
     m_config_folder = config.configFolder;
@@ -144,7 +140,6 @@ bool core::init(const CoreConfig& config, const MinerConfig& minerConfig, bool l
     r = m_miner->init(minerConfig);
   if (!(r)) { logger(ERROR, BRIGHT_RED) << "Failed to initialize blockchain storage"; return false; }
 
-	start_time = std::time(nullptr);
 	
   return load_state_data();
 }
@@ -1051,10 +1046,6 @@ uint64_t core::getNextBlockDifficulty() {
 
 uint64_t core::getTotalGeneratedAmount() {
   return m_blockchain.getCoinsInCirculation();
-}
-
-  uint8_t core::getBlockMajorVersionForHeight(uint32_t height) const {
-  return m_blockchain.getBlockMajorVersionForHeight(height);
 }
 
 bool core::handleIncomingTransaction(const Transaction& tx, const Crypto::Hash& txHash, size_t blobSize, tx_verification_context& tvc, bool keptByBlock) {
