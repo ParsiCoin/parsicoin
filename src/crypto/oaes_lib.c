@@ -46,7 +46,7 @@
  #include <sys/time.h>
 #endif
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <process.h>
 #else
 #include <sys/types.h>
