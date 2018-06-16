@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2012-2018, The CryptoNote developers, The Bytecoin developers, The Parsicoin Developers.
 //
 // This file is part of Bytecoin.
 //
@@ -341,7 +341,7 @@ std::error_code InProcessNode::doRelayTransaction(const CryptoNote::Transaction&
       return make_error_code(CryptoNote::error::REQUEST_ERROR);
     }
 
-    if(tvc.m_verifivation_failed) {
+    if(tvc.m_verification_failed) {
       return make_error_code(CryptoNote::error::REQUEST_ERROR);
     }
 
