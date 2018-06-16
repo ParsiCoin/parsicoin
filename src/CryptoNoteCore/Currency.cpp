@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2016-2018  zawy12
 // Copyright (c) 2016-2018, The Karbowanec developers
-//
+// Copyright (c) 2018, The Parsicoin developers
 // This file is part of Bytecoin.
 //
 // Bytecoin is free software: you can redistribute it and/or modify
@@ -541,26 +541,26 @@ namespace CryptoNote {
 			return 1;
 
 		// To get an average solvetime to within +/- ~0.1%, use an adjustment factor.
-		const double_t adjust = 0.998;
+		const double adjust = 0.998;
 		// The divisor k normalizes LWMA.
-		const double_t k = N * (N + 1) / 2;
+		const double k = N * (N + 1) / 2;
 
-		double_t LWMA(0), sum_inverse_D(0), harmonic_mean_D(0), nextDifficulty(0);
+		double LWMA(0), sum_inverse_D(0), harmonic_mean_D(0), nextDifficulty(0);
 		int64_t solveTime(0);
 		uint64_t difficulty(0), next_difficulty(0);
 
 		// Loop through N most recent blocks.
-		for (int64_t i = 1; i <= N; i++) {
+		for (size_t i = 1; i <= N; i++) {
 			solveTime = static_cast<int64_t>(timestamps[i]) - static_cast<int64_t>(timestamps[i - 1]);
 			solveTime = std::min<int64_t>((T * 7), std::max<int64_t>(solveTime, (-7 * T)));
 			difficulty = cumulativeDifficulties[i] - cumulativeDifficulties[i - 1];
-			LWMA += solveTime * i / k;
-			sum_inverse_D += 1 / static_cast<double_t>(difficulty);
+			LWMA += (int64_t)(solveTime * i) / k;
+			sum_inverse_D += 1 / static_cast<double>(difficulty);
 		}
 
 		// Keep LWMA sane in case something unforeseen occurs.
 		if (static_cast<int64_t>(boost::math::round(LWMA)) < T / 4)
-			LWMA = static_cast<double_t>(T / 4);
+			LWMA = static_cast<double>(T / 4);
 
 		harmonic_mean_D = N / sum_inverse_D * adjust;
 		nextDifficulty = harmonic_mean_D * T / LWMA;
