@@ -21,7 +21,7 @@
 
 #include "CryptoNoteConfig.h"
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <windows.h>
 #include <shlobj.h>
 #include <strsafe.h>
