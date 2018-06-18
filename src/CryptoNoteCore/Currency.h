@@ -93,7 +93,7 @@ public:
   const std::string& blocksCacheFileName() const { return m_blocksCacheFileName; }
   const std::string& blockIndexesFileName() const { return m_blockIndexesFileName; }
   const std::string& txPoolFileName() const { return m_txPoolFileName; }
-  const std::string& blockchinIndicesFileName() const { return m_blockchinIndicesFileName; }
+  const std::string& blockchainIndicesFileName() const { return m_blockchainIndicesFileName; }
 
   bool isTestnet() const { return m_testnet; }
 
