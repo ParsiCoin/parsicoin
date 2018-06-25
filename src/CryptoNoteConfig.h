@@ -58,7 +58,7 @@ const size_t   FUSION_TX_MIN_IN_OUT_COUNT_RATIO              = 4;
 
 const uint32_t UPGRADE_HEIGHT_V2                             = 30000; // Diff algo Change from cryptonote default to lwma
 const uint32_t UPGRADE_HEIGHT_V3                             = 32025; // POW algo Change from cryptonote default to cnv7 Anti ASIC
-const uint32_t UPGRADE_HEIGHT_V4                             = 72000; // CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE = 1000000
+const uint32_t UPGRADE_HEIGHT_V4                             = 70000; // CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE = 1000000
 const unsigned UPGRADE_VOTING_THRESHOLD                      = 90; // percent
 const uint32_t UPGRADE_VOTING_WINDOW                         = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY;  // blocks
 const uint32_t UPGRADE_WINDOW                                = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY;  // blocks
