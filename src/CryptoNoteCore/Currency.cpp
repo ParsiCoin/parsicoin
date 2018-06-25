@@ -117,7 +117,7 @@ namespace CryptoNote {
 
 	size_t Currency::blockGrantedFullRewardZoneByBlockVersion(uint8_t blockMajorVersion) const {
 		if (blockMajorVersion >= BLOCK_MAJOR_VERSION_3) {
-			return m_blockGrantedFullRewardZone;
+			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3;
 		}
 		else if (blockMajorVersion == BLOCK_MAJOR_VERSION_2) {
 			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;
