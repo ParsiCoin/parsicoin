@@ -81,7 +81,7 @@ namespace CryptoNote {
 			m_blocksCacheFileName = "testnet_" + m_blocksCacheFileName;
 			m_blockIndexesFileName = "testnet_" + m_blockIndexesFileName;
 			m_txPoolFileName = "testnet_" + m_txPoolFileName;
-			m_blockchainIndicesFileName = "testnet_" + m_blockchainIndicesFileName;
+			m_blockchinIndicesFileName = "testnet_" + m_blockchinIndicesFileName;
 		}
 
 		return true;
@@ -117,7 +117,7 @@ namespace CryptoNote {
 
 	size_t Currency::blockGrantedFullRewardZoneByBlockVersion(uint8_t blockMajorVersion) const {
 		if (blockMajorVersion >= BLOCK_MAJOR_VERSION_3) {
-			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3;
+			return m_blockGrantedFullRewardZone;
 		}
 		else if (blockMajorVersion == BLOCK_MAJOR_VERSION_2) {
 			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;

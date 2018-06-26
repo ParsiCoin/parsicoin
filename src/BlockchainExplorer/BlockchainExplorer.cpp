@@ -460,7 +460,7 @@ uint64_t BlockchainExplorer::getFullRewardMaxBlockSize(uint8_t majorVersion) {
   }
 
   if (majorVersion >= BLOCK_MAJOR_VERSION_3) {
-    return parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3;
+    return parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
   } else if (majorVersion == BLOCK_MAJOR_VERSION_2) {
     return parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;
   } else {

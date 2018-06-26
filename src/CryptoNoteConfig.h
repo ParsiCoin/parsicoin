@@ -24,7 +24,6 @@ static_assert(EMISSION_SPEED_FACTOR <= 8 * sizeof(uint64_t), "Bad EMISSION_SPEED
 
 const size_t   CRYPTONOTE_REWARD_BLOCKS_WINDOW               = 100;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE     = 20000; //size of block (bytes) after which reward for block calculated using block size
-const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3  = 1000000;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2  = 1000000;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1  = 100000;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_CURRENT = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
@@ -131,7 +130,6 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {58154,	"4222dccc255388f15812462086ad3c29df27c56b971265adc36be0cd370cddd2" },
   {58230,	"197f0e3b5cb86d1b04214e6db936474b959f6b5c7c892d74fd45db0e5893df43" },
   {60000,	"a474549507c89601b13df91be975aa35e178243e3f33df59895ed9aa248d4cbf" },
-  {66100,	"94dc356dbca127019e08cc79ed52189dab62bef3873225cacadb1cb0f62b5495" },
 };
 
 } // CryptoNote
