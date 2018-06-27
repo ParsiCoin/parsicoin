@@ -81,7 +81,7 @@ namespace CryptoNote {
 			m_blocksCacheFileName = "testnet_" + m_blocksCacheFileName;
 			m_blockIndexesFileName = "testnet_" + m_blockIndexesFileName;
 			m_txPoolFileName = "testnet_" + m_txPoolFileName;
-			m_blockchinIndicesFileName = "testnet_" + m_blockchinIndicesFileName;
+			m_blockchainIndicesFileName = "testnet_" + m_blockchainIndicesFileName;
 		}
 
 		return true;
