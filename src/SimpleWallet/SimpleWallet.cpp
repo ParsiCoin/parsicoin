@@ -112,7 +112,9 @@ namespace {
 const command_line::arg_descriptor<std::string> arg_config_file = { "config-file", "Specify configuration file", "" };
 const command_line::arg_descriptor<std::string> arg_wallet_file = { "wallet-file", "Use wallet <arg>", "" };
 const command_line::arg_descriptor<std::string> arg_generate_new_wallet = { "generate-new-wallet", "Generate new wallet and save it to <arg>", "" };
-const command_line::arg_descriptor<std::string> arg_daemon_address = { "daemon-address", "Use daemon instance at <host>:<port>", "" };
+const command_line::arg_descriptor<std::string> arg_daemon_
+
+= { "daemon-address", "Use daemon instance at <host>:<port>", "" };
 const command_line::arg_descriptor<std::string> arg_daemon_host = { "daemon-host", "Use daemon instance at host <arg> instead of localhost", "" };
 const command_line::arg_descriptor<std::string> arg_password = { "password", "Wallet password", "", true };
 const command_line::arg_descriptor<std::string> arg_change_password = { "change-password", "Change wallet password and exit", "", true };
@@ -295,8 +297,8 @@ struct TransferCommand {
           if (!remote_fee_address.empty()) {
             destination.address = remote_fee_address;
             int64_t remote_node_fee = static_cast<int64_t>(de.amount * 0.0025);
-            if (remote_node_fee > 10000000000000)
-                remote_node_fee = 10000000000000;
+            if (remote_node_fee > 1000000000)
+                remote_node_fee = 1000000000;
             destination.amount = remote_node_fee;
             dsts.push_back(destination);
           }
