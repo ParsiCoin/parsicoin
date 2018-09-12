@@ -51,6 +51,12 @@ public:
   size_t blockGrantedFullRewardZone() const { return m_blockGrantedFullRewardZone; }
   size_t blockGrantedFullRewardZoneByBlockVersion(uint8_t blockMajorVersion) const;
   size_t minerTxBlobReservedSize() const { return m_minerTxBlobReservedSize; }
+  uint64_t maxTransactionSizeLimit(uint8_t blockMajorVersion) const { 
+    if (blockMajorVersion >= BLOCK_MAJOR_VERSION_4)
+      return parameters::MAX_TRANSACTION_SIZE_LIMIT;
+    else
+      return parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE - parameters::CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
+  }
 
   size_t numberOfDecimalPlaces() const { return m_numberOfDecimalPlaces; }
   uint64_t coin() const { return m_coin; }
@@ -159,7 +165,7 @@ private:
   size_t m_rewardBlocksWindow;
   size_t m_blockGrantedFullRewardZone;
   size_t m_minerTxBlobReservedSize;
-
+  
   size_t m_numberOfDecimalPlaces;
   uint64_t m_coin;
 
@@ -188,6 +194,7 @@ private:
 
   uint32_t m_upgradeHeightV2;
   uint32_t m_upgradeHeightV3;
+  uint32_t m_upgradeHeightV4;
   unsigned int m_upgradeVotingThreshold;
   uint32_t m_upgradeVotingWindow;
   uint32_t m_upgradeWindow;
@@ -264,6 +271,7 @@ public:
 
   CurrencyBuilder& upgradeHeightV2(uint64_t val) { m_currency.m_upgradeHeightV2 = static_cast<uint32_t>(val); return *this; }
   CurrencyBuilder& upgradeHeightV3(uint64_t val) { m_currency.m_upgradeHeightV3 = static_cast<uint32_t>(val); return *this; }
+  CurrencyBuilder& upgradeHeightV4(uint64_t val) { m_currency.m_upgradeHeightV4 = static_cast<uint32_t>(val); return *this; }
   CurrencyBuilder& upgradeVotingThreshold(unsigned int val);
   CurrencyBuilder& upgradeVotingWindow(size_t val) { m_currency.m_upgradeVotingWindow = static_cast<uint32_t>(val); return *this; }
   CurrencyBuilder& upgradeWindow(size_t val);

@@ -104,6 +104,11 @@ uint32_t core::get_current_blockchain_height() {
   return m_blockchain.getCurrentBlockchainHeight();
 }
 
+uint8_t core::getCurrentBlockMajorVersion() {
+  assert(m_blockchain.getCurrentBlockchainHeight() > 0);
+  return m_blockchain.getBlockMajorVersionForHeight(m_blockchain.getCurrentBlockchainHeight());
+}
+
 void core::get_blockchain_top(uint32_t& height, Crypto::Hash& top_id) {
   assert(m_blockchain.getCurrentBlockchainHeight() > 0);
   top_id = m_blockchain.getTailId(height);
@@ -407,7 +412,9 @@ bool core::get_block_template(Block& b, const AccountPublicAddress& adr, difficu
     if (b.majorVersion == BLOCK_MAJOR_VERSION_1) {
       b.minorVersion = m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_2) == UpgradeDetectorBase::UNDEF_HEIGHT ? BLOCK_MINOR_VERSION_1 : BLOCK_MINOR_VERSION_0;
     } else if (b.majorVersion >= BLOCK_MAJOR_VERSION_2) {
-      if (m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_3) == UpgradeDetectorBase::UNDEF_HEIGHT) {
+      if (m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_4) == UpgradeDetectorBase::UNDEF_HEIGHT) {
+        b.minorVersion = b.majorVersion == BLOCK_MAJOR_VERSION_3 ? BLOCK_MINOR_VERSION_1 : BLOCK_MINOR_VERSION_0;
+      } else if (m_currency.upgradeHeight(BLOCK_MAJOR_VERSION_3) == UpgradeDetectorBase::UNDEF_HEIGHT) {
         b.minorVersion = b.majorVersion == BLOCK_MAJOR_VERSION_2 ? BLOCK_MINOR_VERSION_1 : BLOCK_MINOR_VERSION_0;
       } else {
         b.minorVersion = BLOCK_MINOR_VERSION_0;
@@ -1054,16 +1061,23 @@ bool core::handleIncomingTransaction(const Transaction& tx, const Crypto::Hash& 
 
   // is in checkpoint zone
   if (!m_blockchain.isInCheckpointZone(get_current_blockchain_height())) {
-	  if (!check_tx_fee(tx, blobSize, tvc)) {
-		  tvc.m_verification_failed = true;
-		  return false;
-	  }
+  
+    if (blobSize > m_currency.maxTransactionSizeLimit(getCurrentBlockMajorVersion())) {
+      logger(INFO) << "Transaction verification failed: too big size " << blobSize << " of transaction " << txHash << ", rejected";
+      tvc.m_verification_failed = true;
+      return false;
+    }
 
-	  if (!check_tx_mixin(tx)) {
-		  logger(INFO) << "Transaction verification failed: mixin count for transaction " << txHash << " is too large, rejected";
-		  tvc.m_verification_failed = true;
-		  return false;
-	  }
+    if (!check_tx_fee(tx, blobSize, tvc)) {
+      tvc.m_verification_failed = true;
+      return false;
+    }
+
+    if (!check_tx_mixin(tx)) {
+      logger(INFO) << "Transaction verification failed: mixin count for transaction " << txHash << " is too large, rejected";
+      tvc.m_verification_failed = true;
+      return false;
+    }
   }
 
   if (!check_tx_semantic(tx, keptByBlock)) {

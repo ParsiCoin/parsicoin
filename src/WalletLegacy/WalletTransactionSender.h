@@ -33,7 +33,7 @@ namespace CryptoNote {
 class WalletTransactionSender
 {
 public:
-  WalletTransactionSender(const Currency& currency, WalletUserTransactionsCache& transactionsCache, AccountKeys keys, ITransfersContainer& transfersContainer);
+  WalletTransactionSender(const Currency& currency, INode& node, WalletUserTransactionsCache& transactionsCache, AccountKeys keys, ITransfersContainer& transfersContainer);
 
   void stop();
 
@@ -65,6 +65,7 @@ private:
   uint64_t selectDustTransfersToSend(uint64_t neededMoney, uint64_t dust, std::list<TransactionOutputInformation>& selectedTransfers);
   
   const Currency& m_currency;
+  INode& m_node;
   AccountKeys m_keys;
   WalletUserTransactionsCache& m_transactionsCache;
   uint64_t m_upperTransactionSizeLimit;

@@ -77,6 +77,7 @@ namespace CryptoNote {
 		if (isTestnet()) {
 			m_upgradeHeightV2 = 10;
 			m_upgradeHeightV3 = 20;
+			m_upgradeHeightV4 = static_cast<uint32_t>(-1);
 			m_blocksFileName = "testnet_" + m_blocksFileName;
 			m_blocksCacheFileName = "testnet_" + m_blocksCacheFileName;
 			m_blockIndexesFileName = "testnet_" + m_blockIndexesFileName;
@@ -116,10 +117,10 @@ namespace CryptoNote {
 	}
 
 	size_t Currency::blockGrantedFullRewardZoneByBlockVersion(uint8_t blockMajorVersion) const {
-		if (blockMajorVersion >= BLOCK_MAJOR_VERSION_3) {
+		if (blockMajorVersion == BLOCK_MAJOR_VERSION_3) {
 			return m_blockGrantedFullRewardZone;
 		}
-		else if (blockMajorVersion == BLOCK_MAJOR_VERSION_2) {
+		else if (blockMajorVersion == BLOCK_MAJOR_VERSION_2 || blockMajorVersion >= BLOCK_MAJOR_VERSION_4) {
 			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;
 		}
 		else {
@@ -133,6 +134,9 @@ namespace CryptoNote {
 		}
 		else if (majorVersion == BLOCK_MAJOR_VERSION_3) {
 			return m_upgradeHeightV3;
+		}
+		else if (majorVersion == BLOCK_MAJOR_VERSION_4) {
+			return m_upgradeHeightV4;
 		}
 		else {
 			return static_cast<uint32_t>(-1);
@@ -408,7 +412,6 @@ namespace CryptoNote {
 
 	difficulty_type Currency::nextDifficulty(uint8_t blockMajorVersion, std::vector<uint64_t> timestamps,
 		std::vector<difficulty_type> cumulativeDifficulties) const {
-
 		if (blockMajorVersion >= BLOCK_MAJOR_VERSION_3) {
 			return nextDifficultyV3(timestamps, cumulativeDifficulties);
 		}
@@ -635,6 +638,7 @@ namespace CryptoNote {
 
 		case BLOCK_MAJOR_VERSION_2:
 		case BLOCK_MAJOR_VERSION_3:
+		case BLOCK_MAJOR_VERSION_4:
 			return checkProofOfWorkV2(context, block, currentDiffic, proofOfWork);
 		}
 
@@ -710,6 +714,7 @@ namespace CryptoNote {
 
 		upgradeHeightV2(parameters::UPGRADE_HEIGHT_V2);
 		upgradeHeightV3(parameters::UPGRADE_HEIGHT_V3);
+		upgradeHeightV4(parameters::UPGRADE_HEIGHT_V4);
 		upgradeVotingThreshold(parameters::UPGRADE_VOTING_THRESHOLD);
 		upgradeVotingWindow(parameters::UPGRADE_VOTING_WINDOW);
 		upgradeWindow(parameters::UPGRADE_WINDOW);

@@ -77,13 +77,14 @@ std::shared_ptr<WalletLegacyEvent> makeCompleteEvent(WalletUserTransactionsCache
 
 namespace CryptoNote {
 
-WalletTransactionSender::WalletTransactionSender(const Currency& currency, WalletUserTransactionsCache& transactionsCache, AccountKeys keys, ITransfersContainer& transfersContainer) :
+WalletTransactionSender::WalletTransactionSender(const Currency& currency, INode& node, WalletUserTransactionsCache& transactionsCache, AccountKeys keys, ITransfersContainer& transfersContainer) :
   m_currency(currency),
+  m_node(node),
   m_transactionsCache(transactionsCache),
   m_isStoping(false),
   m_keys(keys),
   m_transferDetails(transfersContainer),
-  m_upperTransactionSizeLimit(parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_CURRENT - m_currency.minerTxBlobReservedSize()) {
+  m_upperTransactionSizeLimit(m_currency.maxTransactionSizeLimit(node.getLastLocalBlockHeaderInfo().majorVersion)) {
 }
 
 void WalletTransactionSender::stop() {
