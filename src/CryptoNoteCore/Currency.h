@@ -51,6 +51,12 @@ public:
   size_t blockGrantedFullRewardZone() const { return m_blockGrantedFullRewardZone; }
   size_t blockGrantedFullRewardZoneByBlockVersion(uint8_t blockMajorVersion) const;
   size_t minerTxBlobReservedSize() const { return m_minerTxBlobReservedSize; }
+  uint64_t maxTransactionSizeLimit(uint8_t blockMajorVersion) const { 
+    if (blockMajorVersion >= BLOCK_MAJOR_VERSION_4)
+      return parameters::MAX_TRANSACTION_SIZE_LIMIT;
+    else
+      return parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE - parameters::CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
+  }
 
   size_t numberOfDecimalPlaces() const { return m_numberOfDecimalPlaces; }
   uint64_t coin() const { return m_coin; }
@@ -159,7 +165,7 @@ private:
   size_t m_rewardBlocksWindow;
   size_t m_blockGrantedFullRewardZone;
   size_t m_minerTxBlobReservedSize;
-
+  
   size_t m_numberOfDecimalPlaces;
   uint64_t m_coin;
 

@@ -261,7 +261,7 @@ void WalletLegacy::initSync() {
   m_transferDetails = &subObject.getContainer();
   subObject.addObserver(this);
 
-  m_sender.reset(new WalletTransactionSender(m_currency, m_transactionsCache, m_account.getAccountKeys(), *m_transferDetails));
+  m_sender.reset(new WalletTransactionSender(m_currency, m_node, m_transactionsCache, m_account.getAccountKeys(), *m_transferDetails));
   m_state = INITIALIZED;
   
   m_blockchainSync.addObserver(this);
