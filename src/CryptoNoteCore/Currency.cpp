@@ -120,11 +120,11 @@ namespace CryptoNote {
 		if (blockMajorVersion == BLOCK_MAJOR_VERSION_3) {
 			return m_blockGrantedFullRewardZone;
 		}
-		else if (blockMajorVersion == BLOCK_MAJOR_VERSION_2 || blockMajorVersion >= BLOCK_MAJOR_VERSION_4) {
+		else if (blockMajorVersion >= BLOCK_MAJOR_VERSION_4) {
 			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2;
 		}
 		else {
-			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1;
+			return CryptoNote::parameters::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
 		}
 	}
 
