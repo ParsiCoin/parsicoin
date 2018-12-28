@@ -24,6 +24,7 @@
 #include "DaemonCommandsHandler.h"
 
 #include "Common/SignalHandler.h"
+#include "Common/StringTools.h"
 #include "Common/PathTools.h"
 #include "crypto/hash.h"
 #include "CryptoNoteCore/CryptoNoteTools.h"
@@ -65,6 +66,7 @@ namespace
   const command_line::arg_descriptor<std::string> arg_set_fee_address = { "fee-address", "Sets fee address for light wallets to the daemon's RPC responses.", "" };
   const command_line::arg_descriptor<bool>        arg_testnet_on  = {"testnet", "Used to deploy test nets. Checkpoints and hardcoded seeds are ignored, "
     "network id is changed. Use it with --data-dir flag. The wallet must be launched with --testnet flag.", false};
+  const command_line::arg_descriptor<std::string> arg_rollback = { "rollback", "Rollback blockchain to <height>" };
 }
 
 bool command_line_preprocessor(const boost::program_options::variables_map& vm, LoggerRef& logger);
@@ -128,6 +130,7 @@ int main(int argc, char* argv[])
 	command_line::add_arg(desc_cmd_sett, arg_set_view_key);
 	command_line::add_arg(desc_cmd_sett, arg_enable_blockchain_indexes);
 	command_line::add_arg(desc_cmd_sett, arg_print_genesis_tx);
+	command_line::add_arg(desc_cmd_sett, arg_rollback);
 
     RpcServerConfig::initOptions(desc_cmd_sett);
     CoreConfig::initOptions(desc_cmd_sett);
@@ -286,6 +289,19 @@ int main(int argc, char* argv[])
       return 1;
     }
     logger(INFO) << "Core initialized OK";
+	
+	if (command_line::has_arg(vm, arg_rollback)) {
+      std::string rollback_str = command_line::get_arg(vm, arg_rollback);
+      if (!rollback_str.empty()) {
+        uint32_t _index = 0;
+        if (!Common::fromString(rollback_str, _index)) {
+          std::cout << "wrong block index parameter" << ENDL;
+          return false;
+        }
+        logger(INFO, BRIGHT_YELLOW) << "Rollback blockchain to height " << _index;
+        ccore.rollbackBlockchain(_index);
+      }
+    }
 
     // start components
     if (!command_line::has_arg(vm, arg_console)) {
