@@ -45,6 +45,7 @@ public:
 	static const command_line::arg_descriptor<std::string> arg_rpc_bind_ip;
 	static const command_line::arg_descriptor<std::string> arg_rpc_user;
 	static const command_line::arg_descriptor<std::string> arg_rpc_password;
+	static const command_line::arg_descriptor<bool> arg_rpc_legacy_security;
 
 	static void init_options(boost::program_options::options_description& desc);
 	bool init(const boost::program_options::variables_map& vm);
@@ -78,7 +79,9 @@ private:
 	CryptoNote::INode& m_node;
 
 	uint16_t m_port;
+	bool m_legacy;
 	std::string m_bind_ip;
+	std::string m_password;
 	std::string m_rpcUser;
 	std::string m_rpcPassword;
 	CryptoNote::Currency& m_currency;

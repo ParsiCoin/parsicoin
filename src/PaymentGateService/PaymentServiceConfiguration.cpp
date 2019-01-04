@@ -41,15 +41,17 @@ Configuration::Configuration() {
   bindAddress = "";
   bindPort = 0;
   m_rpcUser = "";
-  m_rpcPassword = "";
+  rpcPassword = "";
+  legacySecurity = false;
 }
 
 void Configuration::initOptions(boost::program_options::options_description& desc) {
   desc.add_options()
       ("bind-address", po::value<std::string>()->default_value("127.0.0.1"), "payment service bind address")
       ("bind-port", po::value<uint16_t>()->default_value(8070), "payment service bind port")
+	  ("rpc-password", po::value<std::string>(), "Specify the password to access the rpc server.")
+      ("rpc-legacy-security", "Enable legacy mode (no password for RPC). WARNING: INSECURE. USE ONLY AS A LAST RESORT.")
       ("rpc-user", po::value<std::string>(), "Username to use with the RPC server. If empty, no server authorization will be done")
-      ("rpc-password", po::value<std::string>(), "Password to use with the RPC server. If empty, no server authorization will be done")
       ("container-file,w", po::value<std::string>(), "container file")
       ("container-password,p", po::value<std::string>(), "container password")
       ("generate-container,g", "generate new container file with one wallet and exit")
@@ -114,7 +116,7 @@ void Configuration::init(const boost::program_options::variables_map& options) {
   }
 
   if (options.count("rpc-password") != 0) {
-    m_rpcPassword = options["rpc-password"].as<std::string>();
+    rpcPassword = options["rpc-password"].as<std::string>();
   }
 
   if (options.count("container-file") != 0) {
@@ -144,6 +146,24 @@ void Configuration::init(const boost::program_options::variables_map& options) {
 	}
 
   }
+  
+  // If generating a container skip the authentication parameters.
+  if (generateNewContainer) {
+    return;
+  }
+
+  // Check for the authentication parameters
+  if ((options.count("rpc-password") == 0) && (options.count("rpc-legacy-security") == 0)) {
+    throw ConfigurationError("Please specify an RPC password or use the --rpc-legacy-security flag.");
+  }
+
+  if (options.count("rpc-legacy-security") != 0) {
+    legacySecurity = true;
+  }
+  else {
+    rpcPassword = options["rpc-password"].as<std::string>();
+  }
+  
 }
 
 } //namespace PaymentService
