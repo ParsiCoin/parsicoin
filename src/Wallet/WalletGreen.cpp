@@ -2432,7 +2432,7 @@ Crypto::SecretKey WalletGreen::getTransactionSecretKey(size_t transactionIndex) 
 		throw std::system_error(make_error_code(CryptoNote::error::INDEX_OUT_OF_RANGE));
 	}
 
-	return m_transactions.get<RandomAccessIndex>()[transactionIndex].secretKey;
+	return m_transactions.get<RandomAccessIndex>()[transactionIndex].secretKey.get();
 }
 
 void WalletGreen::start() {

@@ -20,6 +20,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 #include "CryptoNote.h"
 
 namespace CryptoNote {
@@ -78,6 +79,7 @@ struct WalletTransaction {
   uint32_t blockHeight;
   Crypto::Hash hash;
   Crypto::SecretKey secretKey;
+  boost::optional<Crypto::SecretKey> secretKey;
   int64_t totalAmount;
   uint64_t fee;
   uint64_t creationTime;
