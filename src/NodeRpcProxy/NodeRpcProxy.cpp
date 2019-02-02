@@ -66,7 +66,10 @@ NodeRpcProxy::NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort)
     m_pullInterval(5000),
     m_nodeHost(nodeHost),
     m_nodePort(nodePort),
-    m_connected(true) {
+    m_connected(true),
+    m_peerCount(0),
+    m_networkHeight(0),
+	m_nodeHeight(0) {
   resetInternalState();
 }
 
@@ -111,9 +114,28 @@ void NodeRpcProxy::init(const INode::Callback& callback) {
 }
 
 bool NodeRpcProxy::shutdown() {
+	std::unique_lock<std::mutex> lock(m_mutex);
+
+  if (m_state == STATE_NOT_INITIALIZED) {
+    return true;
+  } else if (m_state == STATE_INITIALIZING) {
+    m_cv_initialized.wait(lock, [this] { return m_state != STATE_INITIALIZING; });
+    if (m_state == STATE_NOT_INITIALIZED) {
+      return true;
+    }
+  }
+
+  assert(m_state == STATE_INITIALIZED);
+  assert(m_dispatcher != nullptr);
+
+  m_dispatcher->remoteSpawn([this]() {
+    m_stop = true;
+    // Run all spawned contexts
+    m_dispatcher->yield();
+  });
 
   if (m_workerThread.joinable()) {
-    m_workerThread.detach();
+    m_workerThread.join();
   }
   m_state = STATE_NOT_INITIALIZED;
   m_cv_initialized.notify_all();
@@ -246,6 +268,8 @@ void NodeRpcProxy::updateBlockchainStatus() {
     }
 
     updatePeerCount(getInfoResp.incoming_connections_count + getInfoResp.outgoing_connections_count);
+	
+	m_nodeHeight.store(getInfoResp.height, std::memory_order_relaxed);
   }
 
   if (m_connected != m_httpClient->isConnected()) {
@@ -322,6 +346,10 @@ uint64_t NodeRpcProxy::getLastLocalBlockTimestamp() const {
 BlockHeaderInfo NodeRpcProxy::getLastLocalBlockHeaderInfo() const {
   std::lock_guard<std::mutex> lock(m_mutex);
   return lastLocalBlockHeaderInfo;
+}
+
+uint32_t NodeRpcProxy::getNodeHeight() const {
+  return m_nodeHeight.load(std::memory_order_relaxed);
 }
 
 void NodeRpcProxy::relayTransaction(const CryptoNote::Transaction& transaction, const Callback& callback) {
