@@ -116,6 +116,7 @@ const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1
 const char* const SEED_NODES[] = { 
   "node.parsicoin.net:17230",
   "explorer.parsicoin.net:17230",
+  "wallet.parsicoin.net:17230",
 };
 
 struct CheckpointData {
@@ -135,6 +136,7 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {160000,  "d84a21a334f1d98010bd326efc29b2737457a5768326f742219c8d155a9beeeb" },
   {180000,  "503d441f3b99c415f06bf32c7dd77b8bc03b1f47a40a4e2022435cd74f01012a" },
   {200000,  "bc8c39add1b3aeaf2b80c372c883ceb5991b211ac86a9c6aeb0ae7e03a283df4" },
+  {220000,  "6736100fbd014cf81db2e59051ae61e9eecf27eec12f2ac022296f461817bc1d" },
 };
 
 } // CryptoNote
