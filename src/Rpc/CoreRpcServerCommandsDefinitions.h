@@ -926,6 +926,30 @@ struct COMMAND_RPC_VALIDATE_ADDRESS {
   };
 };
 
+struct COMMAND_RPC_VERIFY_MESSAGE {
+	struct request {
+		std::string message;
+		std::string address;
+		std::string signature;
+
+		void serialize(ISerializer &s) {
+			KV_MEMBER(message)
+			KV_MEMBER(address)
+			KV_MEMBER(signature)
+		}
+	};
+
+	struct response {
+		bool sig_valid;
+		std::string status;
+
+		void serialize(ISerializer &s) {
+			KV_MEMBER(sig_valid)
+			KV_MEMBER(status)
+		}
+	};
+};
+
 struct COMMAND_RPC_GET_BLOCKS_DETAILS_BY_HEIGHTS {
   struct request {
     std::vector<uint32_t> blockHeights;

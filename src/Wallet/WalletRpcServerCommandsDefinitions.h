@@ -357,4 +357,54 @@ using CryptoNote::ISerializer;
       };
     };
 	
+	struct COMMAND_RPC_SIGN_MESSAGE
+	{
+		struct request
+		{
+			std::string message;
+ 
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(message);
+			}
+		};
+
+		struct response
+		{
+			std::string signature;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(signature);
+			}
+		};
+	};
+
+	struct COMMAND_RPC_VERIFY_MESSAGE
+	{
+		struct request
+		{
+			std::string message;
+			std::string address;
+			std::string signature;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(message);
+				KV_MEMBER(address);
+				KV_MEMBER(signature);
+			}
+		};
+
+		struct response
+		{
+			bool good;
+ 
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(good);
+			}
+		};
+	};
+	
 }} //Tools::wallet_rpc

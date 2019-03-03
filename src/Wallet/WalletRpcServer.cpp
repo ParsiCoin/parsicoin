@@ -141,6 +141,8 @@ void wallet_rpc_server::processRequest(const CryptoNote::HttpRequest& request, C
 			{ "get_paymentid"  , makeMemberMethod(&wallet_rpc_server::on_gen_paymentid)	  },
 			{ "get_tx_key"     , makeMemberMethod(&wallet_rpc_server::on_get_tx_key)	  },
 			{ "change_password"  , makeMemberMethod(&wallet_rpc_server::on_change_password)   },
+			{ "sign_message"     , makeMemberMethod(&wallet_rpc_server::on_sign_message)      },
+            { "verify_message"   , makeMemberMethod(&wallet_rpc_server::on_verify_message)    },
 		};
 
 		auto it = s_methods.find(jsonRequest.getMethod());
@@ -500,7 +502,33 @@ bool wallet_rpc_server::on_get_tx_key(const wallet_rpc::COMMAND_RPC_GET_TX_KEY::
 	}
 	return true;
 }
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_sign_message(const wallet_rpc::COMMAND_RPC_SIGN_MESSAGE::request& req, wallet_rpc::COMMAND_RPC_SIGN_MESSAGE::response& res)
+{
+    res.signature = m_wallet.sign_message(req.message);
+    return true;
+}
 
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_verify_message(const wallet_rpc::COMMAND_RPC_VERIFY_MESSAGE::request& req, wallet_rpc::COMMAND_RPC_VERIFY_MESSAGE::response& res)
+{
+    CryptoNote::AccountPublicAddress address;
+	if (!m_currency.parseAccountAddressString(req.address, address)) {
+		throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_WRONG_ADDRESS, std::string("Failed to parse address"));
+	}
+	const size_t header_len = strlen("SigV1");
+	if (req.signature.size() < header_len || req.signature.substr(0, header_len) != "SigV1") {
+		throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_WRONG_SIGNATURE, std::string("Signature header check error"));
+	}
+	std::string decoded;
+	Crypto::Signature s;
+	if (!Tools::Base58::decode(req.signature.substr(header_len), decoded) || sizeof(s) != decoded.size()) {
+		throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_WRONG_SIGNATURE, std::string("Signature decoding error"));
+		return false;
+	}
+    res.good = m_wallet.verify_message(req.message, address, req.signature);
+    return true;
+}
 //------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_change_password(const wallet_rpc::COMMAND_RPC_CHANGE_PASSWORD::request& req, wallet_rpc::COMMAND_RPC_CHANGE_PASSWORD::response& res)
 {

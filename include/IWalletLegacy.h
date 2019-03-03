@@ -137,6 +137,9 @@ public:
   virtual Crypto::SecretKey getTxKey(Crypto::Hash& txid) = 0;
   virtual bool getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& tx_key, std::string& sig_str) = 0;
   virtual bool checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) = 0;
+  
+  virtual std::string sign_message(const std::string &data) = 0;
+  virtual bool verify_message(const std::string &data, const CryptoNote::AccountPublicAddress &address, const std::string &signature) = 0;
 };
 
 }
