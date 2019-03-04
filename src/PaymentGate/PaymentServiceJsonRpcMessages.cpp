@@ -49,6 +49,7 @@ void GetStatus::Response::serialize(CryptoNote::ISerializer& serializer) {
   serializer(localDaemonBlockCount, "localDaemonBlockCount");
   serializer(lastBlockHash, "lastBlockHash");
   serializer(peerCount, "peerCount");
+  serializer(version, "version");
 }
 
 void ValidateAddress::Request::serialize(CryptoNote::ISerializer& serializer) {
