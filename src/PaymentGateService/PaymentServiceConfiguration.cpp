@@ -1,20 +1,22 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
-// Copyright(c) 2014 - 2017 XDN - project developers
-// Copyright(c) 2018 The Karbo developers
-// Copyright(c) 2018 The Parsicoin developers
+// Copyright (c) 2014 - 2017 XDN - project developers
+// Copyright (c) 2018, The TurtleCoin Developers
+// Copyright (c) 2018-2019 The Karbo developers
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// This file is part of Karbo.
+//
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "PaymentServiceConfiguration.h"
 
@@ -49,7 +51,7 @@ void Configuration::initOptions(boost::program_options::options_description& des
       ("bind-address", po::value<std::string>()->default_value("127.0.0.1"), "payment service bind address")
       ("bind-port", po::value<uint16_t>()->default_value(8070), "payment service bind port")
       ("rpc-user", po::value<std::string>(), "Username to use with the RPC server. If empty, no server authorization will be done")
-	  ("rpc-password", po::value<std::string>(), "Password to use with the RPC server. If empty, no server authorization will be done")
+      ("rpc-password", po::value<std::string>(), "Password to use with the RPC server. If empty, no server authorization will be done")
       ("container-file,w", po::value<std::string>(), "container file")
       ("container-password,p", po::value<std::string>(), "container password")
       ("generate-container,g", "generate new container file with one wallet and exit")
@@ -119,6 +121,8 @@ void Configuration::init(const boost::program_options::variables_map& options) {
 
   if (options.count("container-file") != 0) {
     containerFile = options["container-file"].as<std::string>();
+  } else {
+    throw ConfigurationError("Wallet file not set");
   }
 
   if (options.count("container-password") != 0) {
@@ -144,7 +148,6 @@ void Configuration::init(const boost::program_options::variables_map& options) {
 	}
 
   }
-  
 }
 
 } //namespace PaymentService

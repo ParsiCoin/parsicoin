@@ -1,19 +1,20 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2018, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "WalletLegacySerialization.h"
 #include "WalletLegacy/WalletUnconfirmedTransactions.h"
@@ -59,7 +60,7 @@ void serialize(WalletLegacyTransaction& txi, CryptoNote::ISerializer& serializer
   serializer(txi.timestamp, "timestamp");
   serializer(txi.unlockTime, "unlock_time");
   serializer(txi.extra, "extra");
-  
+
   if (CryptoNote::WALLET_LEGACY_SERIALIZATION_VERSION >= 2) {
     Crypto::SecretKey secretKey = reinterpret_cast<const Crypto::SecretKey&>(txi.secretKey.get());
     serializer(secretKey, "secret_key");

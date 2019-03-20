@@ -1,0 +1,17 @@
+[Unit]
+Description=ParsiCoin PARS service
+After=network.target
+
+[Service]
+Type=oneshot
+User=ParsiCoin
+Group=ParsiCoin
+PermissionsStartOnly=true
+RemainAfterExit=yes
+ExecStartPre=-/bin/mkdir -p /var/run/parsicoin
+ExecStartPre=/bin/chown -R parsicoin:parsicoin /var/run/parsicoin/
+ExecStart=/usr/lib/parsicoin/parsd.sh --start
+ExecStop=/usr/lib/parsicoin/parsd.sh --stop
+
+[Install]
+WantedBy=multi-user.target

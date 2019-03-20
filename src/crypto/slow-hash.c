@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2013, The Cryptonote developers
 // Copyright (c) 2014-2017, The Monero Project
 // Copyright (c) 2017-2018, Karbo developers
-// Copyright (c) 2018, Parsicoin developers
+// 
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -600,7 +600,7 @@ void cn_slow_hash(const void *data, size_t length, char *hash, int variant)
 
     hash_process(&state.hs, data, length);
     memcpy(text, state.init, INIT_SIZE_BYTE);
-
+	
 	VARIANT1_INIT64();
 
     /* CryptoNight Step 2:  Iteratively encrypt the results from Keccak to fill
@@ -936,7 +936,7 @@ void cn_slow_hash(const void *data, size_t length, char *hash, int variant)
 
     hash_process(&state.hs, data, length);
     memcpy(text, state.init, INIT_SIZE_BYTE);
-
+	
 	VARIANT1_INIT64();
 
     /* CryptoNight Step 2:  Iteratively encrypt the results from Keccak to fill
@@ -1130,9 +1130,9 @@ void cn_slow_hash(const void *data, size_t length, char *hash, int variant)
 
     hash_process(&state.hs, data, length);
     memcpy(text, state.init, INIT_SIZE_BYTE);
-
-	VARIANT1_INIT64();
 	
+	VARIANT1_INIT64();
+
     aes_ctx = (oaes_ctx *) oaes_alloc();
     oaes_key_import_data(aes_ctx, state.hs.b, AES_KEY_SIZE);
 
@@ -1298,9 +1298,9 @@ void cn_slow_hash(const void *data, size_t length, char *hash, int variant) {
   memcpy(text, state.init, INIT_SIZE_BYTE);
   memcpy(aes_key, state.hs.b, AES_KEY_SIZE);
   aes_ctx = (oaes_ctx *) oaes_alloc();
-
-  VARIANT1_PORTABLE_INIT();
   
+  VARIANT1_PORTABLE_INIT();
+
   oaes_key_import_data(aes_ctx, aes_key, AES_KEY_SIZE);
   for (i = 0; i < MEMORY / INIT_SIZE_BYTE; i++) {
     for (j = 0; j < INIT_SIZE_BLK; j++) {

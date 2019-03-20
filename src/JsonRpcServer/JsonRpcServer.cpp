@@ -2,20 +2,20 @@
 // Copyright(c) 2014 - 2017 XDN - project developers
 // Copyright(c) 2018 The Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "JsonRpcServer.h"
 
@@ -32,7 +32,7 @@
 #include <System/Ipv4Address.h>
 #include "HTTP/HttpParser.h"
 #include "HTTP/HttpResponse.h"
-
+#include "Rpc/JsonRpc.h"
 #include "Common/JsonValue.h"
 #include "Serialization/JsonInputValueSerializer.h"
 #include "Serialization/JsonOutputStreamSerializer.h"
@@ -107,7 +107,7 @@ void JsonRpcServer::makeErrorResponse(const std::error_code& ec, Common::JsonVal
   JsonValue error(JsonValue::OBJECT);
 
   JsonValue code;
-  code = static_cast<int64_t>(-32000); //Application specific error code
+  code = static_cast<int64_t>(CryptoNote::JsonRpc::errParseError); //Application specific error code
 
   JsonValue message;
   message = ec.message();
@@ -155,7 +155,7 @@ void JsonRpcServer::makeMethodNotFoundResponse(Common::JsonValue& resp) {
   JsonValue error(JsonValue::OBJECT);
 
   JsonValue code;
-  code = static_cast<int64_t>(-32601); //ambigous declaration of JsonValue::operator= (between int and JsonValue)
+  code = static_cast<int64_t>(CryptoNote::JsonRpc::errMethodNotFound); //ambigous declaration of JsonValue::operator= (between int and JsonValue)
 
   JsonValue message;
   message = "Method not found";
@@ -179,7 +179,7 @@ void JsonRpcServer::makeJsonParsingErrorResponse(Common::JsonValue& resp) {
 
   JsonValue error(JsonValue::OBJECT);
   JsonValue code;
-  code = static_cast<int64_t>(-32700); //ambigous declaration of JsonValue::operator= (between int and JsonValue)
+  code = static_cast<int64_t>(CryptoNote::JsonRpc::errParseError); //ambigous declaration of JsonValue::operator= (between int and JsonValue)
 
   JsonValue message = "Parse error";
 

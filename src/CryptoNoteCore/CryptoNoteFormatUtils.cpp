@@ -1,18 +1,20 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
-// Copyright (c) 2018, The Parsicoin developers
+// Copyright (c) 2018, Karbo developers
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// This file is part of Karbo.
+//
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CryptoNoteFormatUtils.h"
 
@@ -134,7 +136,7 @@ bool constructTransaction(
   tx.extra = extra;
   KeyPair txkey = generateKeyPair();
   addTransactionPublicKeyToExtra(tx.extra, txkey.publicKey);
-  
+
   tx_key = txkey.secretKey;
 
   struct input_generation_context_data {
@@ -291,9 +293,10 @@ bool check_inputs_types_supported(const TransactionPrefix& tx) {
 }
 
 bool check_outs_valid(const TransactionPrefix& tx, std::string* error) {
-	std::unordered_set<PublicKey> keys_seen;
+  std::unordered_set<PublicKey> keys_seen;
   for (const TransactionOutput& out : tx.outputs) {
     if (out.target.type() == typeid(KeyOutput)) {
+ 
       if (out.amount == 0) {
         if (error) {
           *error = "Zero amount ouput";
@@ -307,7 +310,8 @@ bool check_outs_valid(const TransactionPrefix& tx, std::string* error) {
         }
         return false;
       }
-	  if (keys_seen.find(boost::get<KeyOutput>(out.target).key) != keys_seen.end()) {
+
+      if (keys_seen.find(boost::get<KeyOutput>(out.target).key) != keys_seen.end()) {
         if (error) {
           *error = "The same output target is present more than once";
         }
@@ -329,15 +333,15 @@ bool check_outs_valid(const TransactionPrefix& tx, std::string* error) {
           }
           return false;
         }
-		
-		if (keys_seen.find(key) != keys_seen.end()) {
+
+        if (keys_seen.find(key) != keys_seen.end()) {
           if (error) {
             *error = "The same multisignature output target is present more than once";
           }
           return false;
         }
 		keys_seen.insert(key);
-		
+
       }
     } else {
       if (error) {
@@ -485,7 +489,7 @@ bool get_block_hash(const Block& b, Hash& res) {
   }
 
   // The header of block version 1 differs from headers of blocks starting from v.2
-  if (BLOCK_MAJOR_VERSION_2 <= b.majorVersion) {
+  if (BLOCK_MAJOR_VERSION_2 == b.majorVersion || BLOCK_MAJOR_VERSION_3 == b.majorVersion) {
     BinaryArray parent_blob;
     auto serializer = makeParentBlockSerializer(b, true, false);
     if (!toBinaryArray(serializer, parent_blob))
@@ -514,11 +518,11 @@ bool get_aux_block_header_hash(const Block& b, Hash& res) {
 
 bool get_block_longhash(cn_context &context, const Block& b, Hash& res) {
   BinaryArray bd;
-  if (b.majorVersion == BLOCK_MAJOR_VERSION_1) {
+  if (b.majorVersion == BLOCK_MAJOR_VERSION_1 || b.majorVersion >= BLOCK_MAJOR_VERSION_4) {
     if (!get_block_hashing_blob(b, bd)) {
       return false;
     }
-  } else if (b.majorVersion >= BLOCK_MAJOR_VERSION_2) {
+  } else if (b.majorVersion == BLOCK_MAJOR_VERSION_2 || b.majorVersion == BLOCK_MAJOR_VERSION_3) {
     if (!get_parent_block_hashing_blob(b, bd)) {
       return false;
     }
@@ -569,7 +573,7 @@ Hash get_tx_tree_hash(const Block& b) {
   return get_tx_tree_hash(txs_ids);
 }
 
-  bool is_valid_decomposed_amount(uint64_t amount) {
+bool is_valid_decomposed_amount(uint64_t amount) {
   auto it = std::lower_bound(Currency::PRETTY_AMOUNTS.begin(), Currency::PRETTY_AMOUNTS.end(), amount);
   if (it == Currency::PRETTY_AMOUNTS.end() || amount != *it) {
 	  return false;

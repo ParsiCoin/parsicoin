@@ -1,3 +1,25 @@
+// Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2014-2018, The Monero project
+// Copyright (c) 2014-2018, The Forknote developers
+// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2016-2018, The Karbowanec developers
+// Copyright (c) 2018-2019, The ParsiCoin developers
+//
+// This file is part of Karbo.
+//
+// Karbo is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Karbo is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
+
 #pragma once
 
 #include <cstdint>
@@ -9,40 +31,58 @@ const uint64_t DIFFICULTY_TARGET                             = 120; // seconds
 const uint64_t CRYPTONOTE_MAX_BLOCK_NUMBER                   = 500000000;
 const size_t   CRYPTONOTE_MAX_BLOCK_BLOB_SIZE                = 500000000;
 const size_t   CRYPTONOTE_MAX_TX_SIZE                        = 1000000000;
-const uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX       = 0xf5; // addresses start with "h"
-const size_t   CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW          = 6;
-const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT            = 500;
-
-const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW             = 11;
+const uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX       = 0x90004; // addresses start with "PARS"
+const size_t   CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW          = 10;
+const size_t   CRYPTONOTE_TX_SPENDABLE_AGE                   = 6;
+const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT            = DIFFICULTY_TARGET * 7;
+const uint64_t CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT_V1         = DIFFICULTY_TARGET * 3;
+const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW             = 60;
+const size_t   BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V1          = 11;
 
 // MONEY_SUPPLY - total number coins to be generated
-const uint64_t MONEY_SUPPLY                                  = UINT64_C(858986905600000000);
-const uint64_t TAIL_EMISSION_REWARD                          = UINT64_C(10000000000);
+const uint64_t MONEY_SUPPLY                                  = UINT64_C(15000000000000000000);
+const uint64_t COIN                                          = UINT64_C(1000000000000);
+const uint64_t TAIL_EMISSION_REWARD                          = UINT64_C(1000000000000);
 const size_t CRYPTONOTE_COIN_VERSION                         = 1;
 const unsigned EMISSION_SPEED_FACTOR                         = 19;
 static_assert(EMISSION_SPEED_FACTOR <= 8 * sizeof(uint64_t), "Bad EMISSION_SPEED_FACTOR");
 
 const size_t   CRYPTONOTE_REWARD_BLOCKS_WINDOW               = 100;
-const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE     = 20000; //size of block (bytes) after which reward for block calculated using block size
+const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE     = 1000000; //size of block (bytes) after which reward for block calculated using block size
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2  = 1000000;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1  = 100000;
 const size_t   CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_CURRENT = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
 const size_t   CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE        = 600;
-const size_t   CRYPTONOTE_DISPLAY_DECIMAL_POINT              = 8;
-const uint64_t MINIMUM_FEE                                   = 100000; // for now Minimum fee would be 0.001 PARS for a while 
-const uint64_t DEFAULT_DUST_THRESHOLD                        = 100000000;
-const uint64_t MAX_TX_MIXIN_SIZE                             = 20;
-const uint64_t MAX_TRANSACTION_SIZE_LIMIT                    = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2 / 4 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
+const size_t   CRYPTONOTE_DISPLAY_DECIMAL_POINT              = 12;
+
+const uint64_t MINIMUM_FEE_V1                                = UINT64_C(100000000);
+const uint64_t MINIMUM_FEE_V2                                = UINT64_C(1000000000);
+const uint32_t MINIMUM_FEE_V2_HEIGHT                         = 100000000;
+const uint64_t MINIMUM_FEE                                   = MINIMUM_FEE_V2;
+const uint64_t MAXIMUM_FEE                                   = UINT64_C(100000000000);
+
+const uint64_t DEFAULT_DUST_THRESHOLD                        = UINT64_C(100000000);
+const uint64_t MIN_TX_MIXIN_SIZE                             = 2;
+const uint64_t MAX_TX_MIXIN_SIZE_V1                          = 30;
+const uint64_t MAX_TX_MIXIN_SIZE_V2                          = 40;
+const uint64_t MAX_TX_MIXIN_SIZE                             = MAX_TX_MIXIN_SIZE_V1;
+const uint32_t MIN_TX_MIXIN_V1_HEIGHT                        = 100000000;
+const uint32_t MIN_TX_MIXIN_V2_HEIGHT                        = 100000000;
+const uint64_t MAX_TRANSACTION_SIZE_LIMIT                    = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_CURRENT / 4 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
 
 const uint64_t EXPECTED_NUMBER_OF_BLOCKS_PER_DAY             = 24 * 60 * 60 / DIFFICULTY_TARGET;
 const size_t   DIFFICULTY_WINDOW                             = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY; // blocks
-const size_t   DIFFICULTY_WINDOW_V2                          = 60;  // blocks
-const size_t   DIFFICULTY_WINDOW_V3                          = 60; // blocks (add one to compensate off-by-one in difficulty calculation)
+const size_t   DIFFICULTY_WINDOW_V2                          = 17;  // blocks
+const size_t   DIFFICULTY_WINDOW_V3                          = 60;  // blocks
 const size_t   DIFFICULTY_CUT                                = 60;  // timestamps to cut after sorting
 const size_t   DIFFICULTY_LAG                                = 15;  // !!!
 static_assert(2 * DIFFICULTY_CUT <= DIFFICULTY_WINDOW - 2, "Bad DIFFICULTY_WINDOW or DIFFICULTY_CUT");
 
-const size_t   MAX_BLOCK_SIZE_INITIAL                        = 20 * 1024;
+const uint64_t POISSON_CHECK_TRIGGER = 10; // Reorg size that triggers poisson timestamp check
+const uint64_t POISSON_CHECK_DEPTH = 60;   // Main-chain depth of the poisson check. The attacker will have to tamper 50% of those blocks
+const double POISSON_LOG_P_REJECT = -75.0; // Reject reorg if the probablity that the timestamps are genuine is below e^x, -75 = 10^-33
+
+const size_t   MAX_BLOCK_SIZE_INITIAL                        = 1000000;
 const uint64_t MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR         = 100 * 1024;
 const uint64_t MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR       = 365 * 24 * 60 * 60 / DIFFICULTY_TARGET;
 
@@ -57,41 +97,44 @@ const size_t   FUSION_TX_MAX_SIZE                            = CRYPTONOTE_BLOCK_
 const size_t   FUSION_TX_MIN_INPUT_COUNT                     = 12;
 const size_t   FUSION_TX_MIN_IN_OUT_COUNT_RATIO              = 4;
 
-const uint32_t UPGRADE_HEIGHT_V2                             = 30000; // Diff algo Change from cryptonote default to lwma
-const uint32_t UPGRADE_HEIGHT_V3                             = 32025; // POW algo Change from cryptonote default to cnv7 Anti ASIC
-const uint32_t UPGRADE_HEIGHT_V4                             = 130000; // Block Size Changed to 1mb
+const uint32_t UPGRADE_HEIGHT_V2                             = 1;
+const uint32_t UPGRADE_HEIGHT_V3                             = 2;
+const uint32_t UPGRADE_HEIGHT_V4                             = 100000000;
+const uint32_t UPGRADE_HEIGHT_LWMA3                          = 100000000;
+const uint32_t UPGRADE_HEIGHT_V5                             = 100000000;
 const unsigned UPGRADE_VOTING_THRESHOLD                      = 90; // percent
 const uint32_t UPGRADE_VOTING_WINDOW                         = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY;  // blocks
 const uint32_t UPGRADE_WINDOW                                = EXPECTED_NUMBER_OF_BLOCKS_PER_DAY;  // blocks
 static_assert(0 < UPGRADE_VOTING_THRESHOLD && UPGRADE_VOTING_THRESHOLD <= 100, "Bad UPGRADE_VOTING_THRESHOLD");
 static_assert(UPGRADE_VOTING_WINDOW > 1, "Bad UPGRADE_VOTING_WINDOW");
 
-const char     CRYPTONOTE_BLOCKS_FILENAME[]                  = "blocks.dat";
-const char     CRYPTONOTE_BLOCKINDEXES_FILENAME[]            = "blockindexes.dat";
-const char     CRYPTONOTE_BLOCKSCACHE_FILENAME[]             = "blockscache.dat";
-const char     CRYPTONOTE_POOLDATA_FILENAME[]                = "poolstate.bin";
-const char     P2P_NET_DATA_FILENAME[]                       = "p2pstate.bin";
-const char     CRYPTONOTE_BLOCKCHAIN_INDICES_FILENAME[]      = "blockchainindices.dat";
-const char     MINER_CONFIG_FILE_NAME[]                      = "miner_conf.json";
+const char     CRYPTONOTE_BLOCKS_FILENAME[]                  = "parsblocks.dat";
+const char     CRYPTONOTE_BLOCKINDEXES_FILENAME[]            = "parsblockindexes.dat";
+const char     CRYPTONOTE_BLOCKSCACHE_FILENAME[]             = "parsblockscache.dat";
+const char     CRYPTONOTE_POOLDATA_FILENAME[]                = "parspoolstate.bin";
+const char     P2P_NET_DATA_FILENAME[]                       = "parsp2pstate.bin";
+const char     CRYPTONOTE_BLOCKCHAIN_INDICES_FILENAME[]      = "parsblockchainindices.dat";
+const char     MINER_CONFIG_FILE_NAME[]                      = "parsminer_conf.json";
 } // parameters
 
 const char     CRYPTONOTE_NAME[]                             = "parsicoin";
-const char     GENESIS_COINBASE_TX_HEX[]                     = "010601ff0001e08785bcd72f029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd08807121019896bb8cf57b63bf7f645844f57865ecbf38822b86cf67e2dae4bf1d8fb0a8b5";
+const char     GENESIS_COINBASE_TX_HEX[]                     = "010a01ff000180b0def7d32b029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd0880712101b9adb0201fc3edba8aff318ea742d500af27134c23e5dc7882ed700c062aea7d";
 
 const uint8_t  CURRENT_TRANSACTION_VERSION                   =  1;
 const uint8_t  BLOCK_MAJOR_VERSION_1                         =  1;
 const uint8_t  BLOCK_MAJOR_VERSION_2                         =  2;
 const uint8_t  BLOCK_MAJOR_VERSION_3                         =  3;
 const uint8_t  BLOCK_MAJOR_VERSION_4                         =  4;
+const uint8_t  BLOCK_MAJOR_VERSION_5                         =  5;
 const uint8_t  BLOCK_MINOR_VERSION_0                         =  0;
 const uint8_t  BLOCK_MINOR_VERSION_1                         =  1;
 
 const size_t   BLOCKS_IDS_SYNCHRONIZING_DEFAULT_COUNT        =  10000;  //by default, blocks ids count in synchronizing
-const size_t   BLOCKS_SYNCHRONIZING_DEFAULT_COUNT            =  200;    //by default, blocks count in blocks downloading
+const size_t   BLOCKS_SYNCHRONIZING_DEFAULT_COUNT            =  128;    //by default, blocks count in blocks downloading
 const size_t   COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT         =  1000;
 
-const int      P2P_DEFAULT_PORT                              =  17230;
-const int      RPC_DEFAULT_PORT                              =  18230;
+const int      P2P_DEFAULT_PORT                              =  17240;
+const int      RPC_DEFAULT_PORT                              =  18240;
 
 const size_t   P2P_LOCAL_WHITE_PEERLIST_LIMIT                =  1000;
 const size_t   P2P_LOCAL_GRAY_PEERLIST_LIMIT                 =  5000;
@@ -111,12 +154,12 @@ const uint32_t P2P_IP_BLOCKTIME                              = (60 * 60 * 24);//
 const uint32_t P2P_IP_FAILS_BEFORE_BLOCK                     = 10;
 const uint32_t P2P_IDLE_CONNECTION_KILL_INTERVAL             = (5 * 60);      //5 minutes
 
-const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1510d13336228debfee9c918ce505efe225d8c94d045fa115";
+const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1510d12436238debfee9c918ce605efe225d8c94d045fa115";
 
 const char* const SEED_NODES[] = { 
-  "node.parsicoin.net:17230",
-  "explorer.parsicoin.net:17230",
-  "wallet.parsicoin.net:17230",
+  "explorer.parsicoin.net:17240",
+  "wallet.parsicoin.net:17240",
+  "pool.parsicoin.net:17240"
 };
 
 struct CheckpointData {
@@ -125,22 +168,16 @@ struct CheckpointData {
 };
 
 const std::initializer_list<CheckpointData> CHECKPOINTS = { 
-  {1,	"c4ba8a1e242cf230c77f9dd5be19cce872e894b9c9fcf23a6af8e20cee82a092" },
-  {20000,	"6c2c66c328d892caff8c97f61c7876a4af130c41ba8ea035315126d81a87f6c4" },
-  {40000,	"c7ba936826afe2369423983def0e1c628ff3f2784184010c1c37bcb170dad805" },
-  {60000,	"a474549507c89601b13df91be975aa35e178243e3f33df59895ed9aa248d4cbf" },
-  {80000,	"17ca665bc8ff6167236b8b3fb5c96196246dd0c1a5c55b58e878322ce4cc6427" },
-  {100000,  "062c72c1aff09213a8ba7a7c8ff3830cff01da414a30f281135984b596235296" },
-  {120000,  "4732064b59ca2aeeb7cb9339ce307268be3485a11617eed6de4745087abcb623" },
-  {140000,  "25898159bf209d441e1c9acec678cfa901de73e0d9208d5fc8a3e3267cee2c3b" },
-  {160000,  "d84a21a334f1d98010bd326efc29b2737457a5768326f742219c8d155a9beeeb" },
-  {180000,  "503d441f3b99c415f06bf32c7dd77b8bc03b1f47a40a4e2022435cd74f01012a" },
-  {200000,  "bc8c39add1b3aeaf2b80c372c883ceb5991b211ac86a9c6aeb0ae7e03a283df4" },
-  {220000,  "6736100fbd014cf81db2e59051ae61e9eecf27eec12f2ac022296f461817bc1d" },
-  {240000,  "f6b59071b4b0c54b76c067cd1a94de766acae5382dd7a352da4f28b6864c814b" },
+  {1,	"b46fc8d77728e4e0092962864561c5cd1cd5eafba60cb2ef025e5ada4eb66faa" },
+  {2,	"86dded9420cc94037fffa40205bc1e939994c9f77deba40212b417823a57ff27" },
+  {3,	"90e8374d29bc23be19ee69cf5b97dc9551a5d5d8385de6a6443e196c102937d2" },
+  {10,	"15d2d574f2b037bce7dfb0e995ade99f2e618399c42a7acf7326b511377db1e4" },
+  {100,	"2b8cf73215920ce9e8ac6f0fe0106ccb39451e9423da055216e97fd6781003f8" },
 };
 
 } // CryptoNote
 
 #define ALLOW_DEBUG_COMMANDS
+
+
 

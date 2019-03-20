@@ -1,19 +1,21 @@
-// Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers, The Karbowanec developers
+// Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2014-2017, The Monero Project
+// Copyright (c) 2016-2018, The Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef __FreeBSD__
   #include <alloca.h>
@@ -42,20 +44,20 @@ namespace Crypto {
 #include "random.h"
   }
 
-static inline unsigned char *operator &(EllipticCurvePoint &point) {
-	  return &reinterpret_cast<unsigned char &>(point);
+  static inline unsigned char *operator &(EllipticCurvePoint &point) {
+    return &reinterpret_cast<unsigned char &>(point);
   }
 
   static inline const unsigned char *operator &(const EllipticCurvePoint &point) {
-	  return &reinterpret_cast<const unsigned char &>(point);
+    return &reinterpret_cast<const unsigned char &>(point);
   }
 
   static inline unsigned char *operator &(EllipticCurveScalar &scalar) {
-	  return &reinterpret_cast<unsigned char &>(scalar);
+    return &reinterpret_cast<unsigned char &>(scalar);
   }
 
   static inline const unsigned char *operator &(const EllipticCurveScalar &scalar) {
-	  return &reinterpret_cast<const unsigned char &>(scalar);
+    return &reinterpret_cast<const unsigned char &>(scalar);
   }
 
   mutex random_lock;
@@ -290,12 +292,12 @@ static inline unsigned char *operator &(EllipticCurvePoint &point) {
     EllipticCurvePoint key;
     EllipticCurvePoint comm;
   };
-  
+
   struct s_comm_2 {
     Hash msg;
-	EllipticCurvePoint D;
-	EllipticCurvePoint X;
-	EllipticCurvePoint Y;
+    EllipticCurvePoint D;
+    EllipticCurvePoint X;
+    EllipticCurvePoint Y;
   };
 
   void crypto_ops::generate_signature(const Hash &prefix_hash, const PublicKey &pub, const SecretKey &sec, Signature &sig) {
@@ -315,11 +317,18 @@ static inline unsigned char *operator &(EllipticCurvePoint &point) {
 #endif
     buf.h = prefix_hash;
     buf.key = reinterpret_cast<const EllipticCurvePoint&>(pub);
+  try_again:
     random_scalar(k);
+    if (((const uint32_t*)(&k))[7] == 0) // we don't want tiny numbers here
+      goto try_again;
     ge_scalarmult_base(&tmp3, reinterpret_cast<unsigned char*>(&k));
     ge_p3_tobytes(reinterpret_cast<unsigned char*>(&buf.comm), &tmp3);
     hash_to_scalar(&buf, sizeof(s_comm), reinterpret_cast<EllipticCurveScalar&>(sig));
+    if (!sc_isnonzero((const unsigned char*)reinterpret_cast<EllipticCurveScalar&>(sig).data))
+      goto try_again;
     sc_mulsub(reinterpret_cast<unsigned char*>(&sig) + 32, reinterpret_cast<unsigned char*>(&sig), reinterpret_cast<const unsigned char*>(&sec), reinterpret_cast<unsigned char*>(&k));
+    if (!sc_isnonzero((const unsigned char*)reinterpret_cast<unsigned char*>(&sig) + 32))
+      goto try_again;
   }
 
   bool crypto_ops::check_signature(const Hash &prefix_hash, const PublicKey &pub, const Signature &sig) {
@@ -333,17 +342,20 @@ static inline unsigned char *operator &(EllipticCurvePoint &point) {
     if (ge_frombytes_vartime(&tmp3, reinterpret_cast<const unsigned char*>(&pub)) != 0) {
       abort();
     }
-    if (sc_check(reinterpret_cast<const unsigned char*>(&sig)) != 0 || sc_check(reinterpret_cast<const unsigned char*>(&sig) + 32) != 0) {
+    if (sc_check(reinterpret_cast<const unsigned char*>(&sig)) != 0 || sc_check(reinterpret_cast<const unsigned char*>(&sig) + 32) != 0 || !sc_isnonzero(reinterpret_cast<const unsigned char*>(&sig))) {
       return false;
     }
     ge_double_scalarmult_base_vartime(&tmp2, reinterpret_cast<const unsigned char*>(&sig), &tmp3, reinterpret_cast<const unsigned char*>(&sig) + 32);
     ge_tobytes(reinterpret_cast<unsigned char*>(&buf.comm), &tmp2);
+	static const EllipticCurvePoint infinity = { { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };
+	if (memcmp(&buf.comm, &infinity, 32) == 0)
+		return false;
     hash_to_scalar(&buf, sizeof(s_comm), c);
     sc_sub(reinterpret_cast<unsigned char*>(&c), reinterpret_cast<unsigned char*>(&c), reinterpret_cast<const unsigned char*>(&sig));
     return sc_isnonzero(reinterpret_cast<unsigned char*>(&c)) == 0;
   }
 
-void crypto_ops::generate_tx_proof(const Hash &prefix_hash, const PublicKey &R, const PublicKey &A, const PublicKey &D, const SecretKey &r, Signature &sig) {
+  void crypto_ops::generate_tx_proof(const Hash &prefix_hash, const PublicKey &R, const PublicKey &A, const PublicKey &D, const SecretKey &r, Signature &sig) {
     // sanity check
     ge_p3 R_p3;
     ge_p3 A_p3;
@@ -351,24 +363,23 @@ void crypto_ops::generate_tx_proof(const Hash &prefix_hash, const PublicKey &R, 
     if (ge_frombytes_vartime(&R_p3, reinterpret_cast<const unsigned char*>(&R)) != 0) throw std::runtime_error("tx pubkey is invalid");
     if (ge_frombytes_vartime(&A_p3, reinterpret_cast<const unsigned char*>(&A)) != 0) throw std::runtime_error("recipient view pubkey is invalid");
     if (ge_frombytes_vartime(&D_p3, reinterpret_cast<const unsigned char*>(&D)) != 0) throw std::runtime_error("key derivation is invalid");
-//#if !defined(NDEBUG)
-      assert(sc_check(reinterpret_cast<const unsigned char*>(&r)) == 0);
-      // check R == r*G
-      ge_p3 dbg_R_p3;
-      ge_scalarmult_base(&dbg_R_p3, reinterpret_cast<const unsigned char*>(&r));
-      PublicKey dbg_R;
-      ge_p3_tobytes(reinterpret_cast<unsigned char*>(&dbg_R), &dbg_R_p3);
-      assert(R == dbg_R);
-      // check D == r*A
-      ge_p2 dbg_D_p2;
-      ge_scalarmult(&dbg_D_p2, reinterpret_cast<const unsigned char*>(&r), &A_p3);
-      PublicKey dbg_D;
-      ge_tobytes(reinterpret_cast<unsigned char*>(&dbg_D), &dbg_D_p2);
-      assert(D == dbg_D);
-//#endif
+
+    assert(sc_check(reinterpret_cast<const unsigned char*>(&r)) == 0);
+    // check R == r*G
+    ge_p3 dbg_R_p3;
+    ge_scalarmult_base(&dbg_R_p3, reinterpret_cast<const unsigned char*>(&r));
+    PublicKey dbg_R;
+    ge_p3_tobytes(reinterpret_cast<unsigned char*>(&dbg_R), &dbg_R_p3);
+    assert(R == dbg_R);
+    // check D == r*A
+    ge_p2 dbg_D_p2;
+    ge_scalarmult(&dbg_D_p2, reinterpret_cast<const unsigned char*>(&r), &A_p3);
+    PublicKey dbg_D;
+    ge_tobytes(reinterpret_cast<unsigned char*>(&dbg_D), &dbg_D_p2);
+    assert(D == dbg_D);
 
     // pick random k
-	EllipticCurveScalar k;
+    EllipticCurveScalar k;
     random_scalar(k);
 
     // compute X = k*G
@@ -430,8 +441,8 @@ void crypto_ops::generate_tx_proof(const Hash &prefix_hash, const PublicKey &R, 
     ge_p1p1_to_p2(&X_p2, &X_p1p1);
 
     // compute Y = sig.c*D + sig.r*A
-	PublicKey cD;
-	PublicKey rA;
+    PublicKey cD;
+    PublicKey rA;
     ge_tobytes(reinterpret_cast<unsigned char*>(&cD), &cD_p2);
     ge_tobytes(reinterpret_cast<unsigned char*>(&rA), &rA_p2);
     ge_p3 cD_p3;
@@ -451,11 +462,11 @@ void crypto_ops::generate_tx_proof(const Hash &prefix_hash, const PublicKey &R, 
     buf.D = reinterpret_cast<const EllipticCurvePoint&>(D);
     ge_tobytes(&buf.X, &X_p2);
     ge_tobytes(&buf.Y, &Y_p2);
-	EllipticCurveScalar c2;
+    EllipticCurveScalar c2;
     hash_to_scalar(&buf, sizeof(s_comm_2), c2);
 
     // test if c2 == sig.c
-	sc_sub(reinterpret_cast<unsigned char*>(&c2), reinterpret_cast<unsigned char*>(&c2), reinterpret_cast<const unsigned char*>(&sig));
+    sc_sub(reinterpret_cast<unsigned char*>(&c2), reinterpret_cast<unsigned char*>(&c2), reinterpret_cast<const unsigned char*>(&sig));
     return sc_isnonzero(&c2) == 0;
   }
 

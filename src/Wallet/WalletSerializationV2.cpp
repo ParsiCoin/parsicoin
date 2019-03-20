@@ -1,19 +1,20 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2018, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "WalletSerializationV2.h"
 
@@ -49,7 +50,7 @@ struct WalletTransactionDtoV2 {
     unlockTime = wallet.unlockTime;
     extra = wallet.extra;
     isBase = wallet.isBase;
-	if (wallet.secretKey)
+    if (wallet.secretKey)
       secretKey = reinterpret_cast<const Crypto::SecretKey&>(wallet.secretKey.get());
   }
 
@@ -104,6 +105,7 @@ void serialize(WalletTransactionDtoV2& value, CryptoNote::ISerializer& serialize
   serializer(value.unlockTime, "unlockTime");
   serializer(value.extra, "extra");
   serializer(value.isBase, "isBase");
+
   Crypto::SecretKey secretKey = reinterpret_cast<const Crypto::SecretKey&>(value.secretKey.get());
   serializer(secretKey, "secret_key");
   value.secretKey = secretKey;
@@ -279,7 +281,7 @@ void WalletSerializerV2::loadTransactions(CryptoNote::ISerializer& serializer) {
     tx.unlockTime = dto.unlockTime;
     tx.extra = dto.extra;
     tx.isBase = dto.isBase;
-	if (dto.secretKey)
+    if (dto.secretKey)
       tx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(dto.secretKey.get());
 
     m_transactions.get<RandomAccessIndex>().emplace_back(std::move(tx));

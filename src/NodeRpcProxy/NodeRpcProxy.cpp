@@ -1,19 +1,19 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "NodeRpcProxy.h"
 #include "NodeErrors.h"
@@ -69,7 +69,8 @@ NodeRpcProxy::NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort)
     m_connected(true),
     m_peerCount(0),
     m_networkHeight(0),
-	m_nodeHeight(0) {
+	m_nodeHeight(0),
+	m_minimalFee(CryptoNote::parameters::MAXIMUM_FEE) {
   resetInternalState();
 }
 
@@ -114,7 +115,7 @@ void NodeRpcProxy::init(const INode::Callback& callback) {
 }
 
 bool NodeRpcProxy::shutdown() {
-	std::unique_lock<std::mutex> lock(m_mutex);
+  std::unique_lock<std::mutex> lock(m_mutex);
 
   if (m_state == STATE_NOT_INITIALIZED) {
     return true;
@@ -268,7 +269,8 @@ void NodeRpcProxy::updateBlockchainStatus() {
     }
 
     updatePeerCount(getInfoResp.incoming_connections_count + getInfoResp.outgoing_connections_count);
-	
+
+	m_minimalFee.store(getInfoResp.min_tx_fee, std::memory_order_relaxed);
 	m_nodeHeight.store(getInfoResp.height, std::memory_order_relaxed);
   }
 
@@ -341,6 +343,10 @@ uint32_t NodeRpcProxy::getKnownBlockCount() const {
 uint64_t NodeRpcProxy::getLastLocalBlockTimestamp() const {
   std::lock_guard<std::mutex> lock(m_mutex);
   return lastLocalBlockHeaderInfo.timestamp;
+}
+
+uint64_t NodeRpcProxy::getMinimalFee() const {
+  return m_minimalFee.load(std::memory_order_relaxed);
 }
 
 BlockHeaderInfo NodeRpcProxy::getLastLocalBlockHeaderInfo() const {
@@ -722,6 +728,7 @@ std::error_code NodeRpcProxy::jsonRpcCommand(const std::string& method, const Re
     HttpRequest httpReq;
     HttpResponse httpRes;
 
+    httpReq.addHeader("Content-Type", "application/json");
     httpReq.setUrl("/json_rpc");
     httpReq.setBody(jsReq.getBody());
 

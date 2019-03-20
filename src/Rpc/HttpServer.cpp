@@ -1,20 +1,21 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2014-2016 XDN developers
 // Copyright (c) 2016-2018 Karbowanec developers
-// Copyright (c) 2018 Parsicoin developers
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// This file is part of Karbo.
+//
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "HttpServer.h"
 #include <boost/scope_exit.hpp>
@@ -104,7 +105,7 @@ void HttpServer::acceptLoop() {
     m_connections.insert(&connection);
     BOOST_SCOPE_EXIT_ALL(this, &connection) { 
       m_connections.erase(&connection); };
-	  
+
 	workingContextGroup.spawn(std::bind(&HttpServer::acceptLoop, this));
 
 	//auto addr = connection.getPeerAddressAndPort();
@@ -125,7 +126,8 @@ void HttpServer::acceptLoop() {
       HttpRequest req;
       HttpResponse resp;
 	  resp.addHeader("Access-Control-Allow-Origin", "*");
-
+	  resp.addHeader("content-type", "application/json");
+	
       parser.receiveRequest(stream, req);
 				if (authenticate(req)) {
 					processRequest(req, resp);
@@ -151,23 +153,27 @@ void HttpServer::acceptLoop() {
   }
 }
 
-	bool HttpServer::authenticate(const HttpRequest& request) const {
-		if (!m_credentials.empty()) {
-			auto headerIt = request.getHeaders().find("authorization");
-			if (headerIt == request.getHeaders().end()) {
-				return false;
-			}
-
-			if (headerIt->second.substr(0, 6) != "Basic ") {
-				return false;
-			}
-
-			if (headerIt->second.substr(6) != m_credentials) {
-				return false;
-			}
+bool HttpServer::authenticate(const HttpRequest& request) const {
+	if (!m_credentials.empty()) {
+		auto headerIt = request.getHeaders().find("authorization");
+		if (headerIt == request.getHeaders().end()) {
+			return false;
 		}
 
-		return true;
+		if (headerIt->second.substr(0, 6) != "Basic ") {
+			return false;
+		}
+
+		if (headerIt->second.substr(6) != m_credentials) {
+			return false;
+		}
 	}
+
+	return true;
+}
+
+size_t HttpServer::get_connections_count() const {
+	return m_connections.size();
+}
 
 }

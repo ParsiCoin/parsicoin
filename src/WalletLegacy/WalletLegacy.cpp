@@ -1,6 +1,7 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2014-2018, The Monero Project
 // Copyright (c) 2017-2018, Karbo developers
-// Copyright (c) 2018, Parsicoin developers
+// 
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -29,16 +30,25 @@
 
 #include "WalletLegacy.h"
 
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <set>
+#include <tuple>
+#include <utility>
 #include <string.h>
 #include <time.h>
 
-#include <Common/Base58.h>
+#include "crypto/crypto.h"
+#include "Common/Base58.h"
+#include "Common/ShuffleGenerator.h"
 #include "Logging/ConsoleLogger.h"
 #include "WalletLegacy/WalletHelper.h"
 #include "WalletLegacy/WalletLegacySerialization.h"
 #include "WalletLegacy/WalletLegacySerializer.h"
 #include "WalletLegacy/WalletUtils.h"
 #include "Common/StringTools.h"
+#include "CryptoNoteCore/CryptoNoteTools.h"
 #include "mnemonics/electrum-words.h"
 
 extern "C"
@@ -257,7 +267,7 @@ void WalletLegacy::initAndLoad(std::istream& source, const std::string& password
 void WalletLegacy::initSync() {
   AccountSubscription sub;
   sub.keys = reinterpret_cast<const AccountKeys&>(m_account.getAccountKeys());
-  sub.transactionSpendableAge = 1;
+  sub.transactionSpendableAge = CryptoNote::parameters::CRYPTONOTE_TX_SPENDABLE_AGE;
   sub.syncStart.height = 0;
   sub.syncStart.timestamp = m_account.get_createtime() - ACCOUNT_CREATE_TIME_ACCURACY;
   
@@ -265,7 +275,7 @@ void WalletLegacy::initSync() {
   m_transferDetails = &subObject.getContainer();
   subObject.addObserver(this);
 
-  m_sender.reset(new WalletTransactionSender(m_currency, m_node, m_transactionsCache, m_account.getAccountKeys(), *m_transferDetails));
+  m_sender.reset(new WalletTransactionSender(m_currency, m_transactionsCache, m_account.getAccountKeys(), *m_transferDetails));
   m_state = INITIALIZED;
   
   m_blockchainSync.addObserver(this);
@@ -290,18 +300,18 @@ void WalletLegacy::doLoad(std::istream& source) {
     } catch (const std::exception&) {
       // ignore cache loading errors
     }
-	
+
 	// Read all output keys cache
     std::vector<TransactionOutputInformation> allTransfers;
     m_transferDetails->getOutputs(allTransfers, ITransfersContainer::IncludeAll);
     auto message = "Loaded " + std::to_string(allTransfers.size()) + " known transfer(s)\r\n";
     m_loggerGroup("WalletLegacy", INFO, boost::posix_time::second_clock::local_time(), message);
     for (auto& o : allTransfers) {
-      if (o.type == TransactionTypes::OutputType::Key) {
+      if (o.type != TransactionTypes::OutputType::Invalid) {
         m_transfersSync.addPublicKeysSeen(m_account.getAccountKeys().address, o.transactionHash, o.outputKey);
       }
     }
-	
+
   } catch (std::system_error& e) {
     runAtomic(m_cacheMutex, [this] () {this->m_state = WalletLegacy::NOT_INITIALIZED;} );
     m_observerManager.notify(&IWalletLegacyObserver::initCompleted, e.code());
@@ -516,7 +526,7 @@ uint64_t WalletLegacy::pendingBalance() {
   return m_transferDetails->balance(ITransfersContainer::IncludeKeyNotUnlocked) + change;
 }
 
-	uint64_t WalletLegacy::dustBalance() {
+uint64_t WalletLegacy::dustBalance() {
 	std::unique_lock<std::mutex> lock(m_cacheMutex);
 	throwIfNotInitialised();
 
@@ -578,6 +588,96 @@ size_t WalletLegacy::getUnlockedOutputsCount() {
   return outputs.size();
 }
 
+size_t WalletLegacy::estimateFusion(const uint64_t& threshold) {
+  size_t fusionReadyCount = 0;
+  std::vector<TransactionOutputInformation> outputs;
+  m_transferDetails->getOutputs(outputs, ITransfersContainer::IncludeKeyUnlocked);
+  std::array<size_t, std::numeric_limits<uint64_t>::digits10 + 1> bucketSizes;
+  bucketSizes.fill(0);
+  for (auto& out : outputs) {
+    uint8_t powerOfTen = 0;
+	if (m_currency.isAmountApplicableInFusionTransactionInput(out.amount, threshold, powerOfTen, m_node.getLastKnownBlockHeight())) {
+      assert(powerOfTen < std::numeric_limits<uint64_t>::digits10 + 1);
+      bucketSizes[powerOfTen]++;
+	}
+  }
+  for (auto bucketSize : bucketSizes) {
+    if (bucketSize >= m_currency.fusionTxMinInputCount()) {
+      fusionReadyCount += bucketSize;
+    }
+  }
+  return fusionReadyCount;
+}
+
+std::list<TransactionOutputInformation> WalletLegacy::selectFusionTransfersToSend(uint64_t threshold, size_t minInputCount, size_t maxInputCount) {
+  std::list<TransactionOutputInformation> selectedOutputs;
+  std::vector<TransactionOutputInformation> outputs;
+  std::vector<TransactionOutputInformation> allFusionReadyOuts;
+  m_transferDetails->getOutputs(outputs, ITransfersContainer::IncludeKeyUnlocked);
+  std::array<size_t, std::numeric_limits<uint64_t>::digits10 + 1> bucketSizes;
+  bucketSizes.fill(0);
+  for (auto& out : outputs) {
+    uint8_t powerOfTen = 0;
+    if (m_currency.isAmountApplicableInFusionTransactionInput(out.amount, threshold, powerOfTen, m_node.getLastKnownBlockHeight())) {
+      allFusionReadyOuts.push_back(std::move(out));
+      assert(powerOfTen < std::numeric_limits<uint64_t>::digits10 + 1);
+      bucketSizes[powerOfTen]++;
+    }
+  }
+
+  //now, pick the bucket
+  std::vector<uint8_t> bucketNumbers(bucketSizes.size());
+  std::iota(bucketNumbers.begin(), bucketNumbers.end(), 0);
+  std::shuffle(bucketNumbers.begin(), bucketNumbers.end(), std::default_random_engine{ Crypto::rand<std::default_random_engine::result_type>() });
+  size_t bucketNumberIndex = 0;
+  for (; bucketNumberIndex < bucketNumbers.size(); ++bucketNumberIndex) {
+	  if (bucketSizes[bucketNumbers[bucketNumberIndex]] >= minInputCount) {
+		  break;
+	  }
+  }
+
+  if (bucketNumberIndex == bucketNumbers.size()) {
+	  return {};
+  }
+
+  size_t selectedBucket = bucketNumbers[bucketNumberIndex];
+  assert(selectedBucket < std::numeric_limits<uint64_t>::digits10 + 1);
+  assert(bucketSizes[selectedBucket] >= minInputCount);
+  uint64_t lowerBound = 1;
+  for (size_t i = 0; i < selectedBucket; ++i) {
+	  lowerBound *= 10;
+  }
+
+  uint64_t upperBound = selectedBucket == std::numeric_limits<uint64_t>::digits10 ? UINT64_MAX : lowerBound * 10;
+  std::vector<TransactionOutputInformation> selectedOuts;
+  selectedOuts.reserve(bucketSizes[selectedBucket]);
+  for (size_t outIndex = 0; outIndex < allFusionReadyOuts.size(); ++outIndex) {
+	  if (allFusionReadyOuts[outIndex].amount >= lowerBound && allFusionReadyOuts[outIndex].amount < upperBound) {
+		  selectedOuts.push_back(std::move(allFusionReadyOuts[outIndex]));
+	  }
+  }
+
+  assert(selectedOuts.size() >= minInputCount);
+
+  auto outputsSortingFunction = [](const TransactionOutputInformation& l, const TransactionOutputInformation& r) { return l.amount < r.amount; };
+  if (selectedOuts.size() <= maxInputCount) {
+	  std::sort(selectedOuts.begin(), selectedOuts.end(), outputsSortingFunction);
+	  std::copy(selectedOuts.begin(), selectedOuts.end(), std::back_inserter(selectedOutputs));
+	  return selectedOutputs;
+  }
+
+  ShuffleGenerator<size_t, Crypto::random_engine<size_t>> generator(selectedOuts.size());
+  std::vector<TransactionOutputInformation> trimmedSelectedOuts;
+  trimmedSelectedOuts.reserve(maxInputCount);
+  for (size_t i = 0; i < maxInputCount; ++i) {
+	  trimmedSelectedOuts.push_back(std::move(selectedOuts[generator()]));
+  }
+
+  std::sort(trimmedSelectedOuts.begin(), trimmedSelectedOuts.end(), outputsSortingFunction);
+  std::copy(trimmedSelectedOuts.begin(), trimmedSelectedOuts.end(), std::back_inserter(selectedOutputs));
+  return selectedOutputs;
+}
+
 TransactionId WalletLegacy::sendTransaction(const WalletLegacyTransfer& transfer, uint64_t fee, const std::string& extra, uint64_t mixIn, uint64_t unlockTimestamp) {
   std::vector<WalletLegacyTransfer> transfers;
   transfers.push_back(transfer);
@@ -607,14 +707,6 @@ TransactionId WalletLegacy::sendTransaction(const std::vector<WalletLegacyTransf
   return txId;
 }
 
-	TransactionId WalletLegacy::sendDustTransaction(const WalletLegacyTransfer& transfer, uint64_t fee, const std::string& extra, uint64_t mixIn, uint64_t unlockTimestamp) {
-	std::vector<WalletLegacyTransfer> transfers;
-	transfers.push_back(transfer);
-	throwIfNotInitialised();
-
-	return sendDustTransaction(transfers, fee, extra, mixIn, unlockTimestamp);
-}
-
 TransactionId WalletLegacy::sendDustTransaction(const std::vector<WalletLegacyTransfer>& transfers, uint64_t fee, const std::string& extra, uint64_t mixIn, uint64_t unlockTimestamp) {
 	TransactionId txId = 0;
 	std::shared_ptr<WalletRequest> request;
@@ -635,6 +727,36 @@ TransactionId WalletLegacy::sendDustTransaction(const std::vector<WalletLegacyTr
 
 	return txId;
 }
+
+TransactionId WalletLegacy::sendFusionTransaction(const std::list<TransactionOutputInformation>& fusionInputs, uint64_t fee, const std::string& extra, uint64_t mixIn, uint64_t unlockTimestamp) {
+	TransactionId txId = 0;
+	std::shared_ptr<WalletRequest> request;
+	std::deque<std::shared_ptr<WalletLegacyEvent>> events;
+	throwIfNotInitialised();
+	std::vector<WalletLegacyTransfer> transfers;
+	WalletLegacyTransfer destination;
+	destination.amount = 0;
+	for (auto& out : fusionInputs) {
+		destination.amount += out.amount;
+	}
+	destination.address = getAddress();
+	transfers.push_back(destination);
+
+	{
+		std::unique_lock<std::mutex> lock(m_cacheMutex);
+		request = m_sender->makeSendFusionRequest(txId, events, transfers, fusionInputs, fee, extra, mixIn, unlockTimestamp);
+	}
+
+	notifyClients(events);
+
+	if (request) {
+		m_asyncContextCounter.addAsyncContext();
+		request->perform(m_node, std::bind(&WalletLegacy::sendTransactionCallback, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+	return txId;
+}
+
 
 void WalletLegacy::sendTransactionCallback(WalletRequest::Callback callback, std::error_code ec) {
   ContextCounterHolder counterHolder(m_asyncContextCounter);
@@ -766,7 +888,7 @@ void WalletLegacy::notifyIfBalanceChanged() {
     m_observerManager.notify(&IWalletLegacyObserver::pendingBalanceUpdated, pending);
   }
 
-auto dust = dustBalance();
+  auto dust = dustBalance();
   auto prevDust = m_lastNotifiedUnmixableBalance.exchange(dust);
 
   if (prevDust != dust) {
@@ -781,6 +903,13 @@ void WalletLegacy::getAccountKeys(AccountKeys& keys) {
   }
 
   keys = m_account.getAccountKeys();
+}
+
+bool WalletLegacy::isTrackingWallet() {
+  AccountKeys keys;
+  getAccountKeys(keys);
+  
+  return keys.spendSecretKey == boost::value_initialized<Crypto::SecretKey>();
 }
 
 std::vector<TransactionId> WalletLegacy::deleteOutdatedUnconfirmedTransactions() {
@@ -798,28 +927,32 @@ Crypto::SecretKey WalletLegacy::getTxKey(Crypto::Hash& txid) {
      return NULL_SECRET_KEY;
   }
 }
+bool WalletLegacy::get_tx_key(Crypto::Hash& txid, Crypto::SecretKey& txSecretKey) {
+  TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
+  WalletLegacyTransaction transaction;
+  getTransaction(ti, transaction);
+  txSecretKey = transaction.secretKey.get();
+  if (txSecretKey == NULL_SECRET_KEY) {
+    m_loggerGroup("WalletLegacy", INFO, boost::posix_time::second_clock::local_time(), "Transaction secret key is not stored in wallet cache.");
+    return false;
+  }
 
-bool WalletLegacy::getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& tx_key, std::string& sig_str) {
-  //SecretKey txKey = *reinterpret_cast<const Crypto::SecretKey*>(tx_key.data());
-  Crypto::Hash tx_key_hash;
-  size_t size;
-  if (!Common::fromHex(tx_key, &tx_key_hash, sizeof(tx_key_hash), size) || size != sizeof(tx_key_hash))
-	  return false;
-  SecretKey txKey = *(struct Crypto::SecretKey *) &tx_key_hash;
+  return true;
+}
+
+bool WalletLegacy::getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, Crypto::SecretKey& tx_key, std::string& sig_str) {
   Crypto::KeyImage p = *reinterpret_cast<Crypto::KeyImage*>(&address.viewPublicKey);
-  Crypto::KeyImage k = *reinterpret_cast<Crypto::KeyImage*>(&txKey);
+  Crypto::KeyImage k = *reinterpret_cast<Crypto::KeyImage*>(&tx_key);
   Crypto::KeyImage pk = Crypto::scalarmultKey(p, k);
   Crypto::PublicKey R;
   Crypto::PublicKey rA = reinterpret_cast<const PublicKey&>(pk);
-  Crypto::secret_key_to_public_key(txKey, R);
+  Crypto::secret_key_to_public_key(tx_key, R);
   Crypto::Signature sig;
-  try
-  {
-    Crypto::generate_tx_proof(txid, R, address.viewPublicKey, rA, txKey, sig);
+  try {
+    Crypto::generate_tx_proof(txid, R, address.viewPublicKey, rA, tx_key, sig);
   }
-  catch (const std::runtime_error &e)
-  {
-    std::cout << "Proof generation error: " << e.what();
+  catch (const std::runtime_error &e) {
+    m_loggerGroup("WalletLegacy", INFO, boost::posix_time::second_clock::local_time(), "Proof generation error: " + *e.what());
     return false;
   }
 
@@ -830,54 +963,127 @@ bool WalletLegacy::getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddre
   return true;
 }
 
-bool WalletLegacy::checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) {
-  const size_t header_len = strlen("ProofV1");
-  if (sig_str.size() < header_len || sig_str.substr(0, header_len) != "ProofV1")
-  {
-	std::cout << "Signature header check error";
-    return false;
-  }
-  Crypto::PublicKey rA;
-  Crypto::Signature sig;
-  const size_t rA_len = Tools::Base58::encode(std::string((const char *)&rA, sizeof(Crypto::PublicKey))).size();
-  const size_t sig_len = Tools::Base58::encode(std::string((const char *)&sig, sizeof(Crypto::Signature))).size();
-  std::string rA_decoded;
-  std::string sig_decoded;
-  if (!Tools::Base58::decode(sig_str.substr(header_len, rA_len), rA_decoded)) {
-    std::cout << "Signature decoding error";
-	return false;
-  }
-  if (!Tools::Base58::decode(sig_str.substr(header_len + rA_len, sig_len), sig_decoded))
-  {
-    std::cout << "Signature decoding error";
-    return false;
-  }
-  if (sizeof(Crypto::PublicKey) != rA_decoded.size() || sizeof(Crypto::Signature) != sig_decoded.size())
-  {
-    std::cout << "Signature decoding error";
-    return false;
-  }
-  memcpy(&rA, rA_decoded.data(), sizeof(Crypto::PublicKey));
-  memcpy(&sig, sig_decoded.data(), sizeof(Crypto::PublicKey));
-
-  // fetch tx pubkey
-  TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
-  WalletLegacyTransaction tx;
-  if (!getTransaction(ti, tx)) {
-    std::cout << "Transaction with hash " << Common::podToHex(txid) << "is not found";
-	return false;
-  }
-  CryptoNote::TransactionPrefix txp = *reinterpret_cast<const TransactionPrefix*>(&tx);
-  Crypto::PublicKey R = getTransactionPublicKeyFromExtra(txp.extra);
-  if (R == NULL_PUBLIC_KEY)
-  {
-    std::cout << "Tx pubkey was not found";
-    return false;
-  }
-
-  // check signature
-  return Crypto::check_tx_proof(txid, R, address.viewPublicKey, rA, sig);
+bool compareTransactionOutputInformationByAmount(const TransactionOutputInformation &a, const TransactionOutputInformation &b) {
+  return a.amount < b.amount;
 }
 
+std::string WalletLegacy::getReserveProof(const uint64_t &reserve, const std::string &message) {
+	const CryptoNote::AccountKeys keys = m_account.getAccountKeys();
+	Crypto::SecretKey viewSecretKey = keys.viewSecretKey;
+
+	if (keys.spendSecretKey == NULL_SECRET_KEY) {
+		throw std::runtime_error("Reserve proof can only be generated by a full wallet");
+	}
+
+	if (actualBalance() == 0) {
+		throw std::runtime_error("Zero balance");
+	}
+
+	if (actualBalance() < reserve) {
+		throw std::runtime_error("Not enough balance for the requested minimum reserve amount");
+	}
+
+	// determine which outputs to include in the proof
+	std::vector<TransactionOutputInformation> selected_transfers;
+	m_transferDetails->getOutputs(selected_transfers, ITransfersContainer::IncludeAllUnlocked);
+	
+	// minimize the number of outputs included in the proof, by only picking the N largest outputs that can cover the requested min reserve amount
+	std::sort(selected_transfers.begin(), selected_transfers.end(), compareTransactionOutputInformationByAmount);
+	while (selected_transfers.size() >= 2 && selected_transfers[1].amount >= reserve)
+		selected_transfers.erase(selected_transfers.begin());
+	size_t sz = 0;
+	uint64_t total = 0;
+	while (total < reserve) {
+		total += selected_transfers[sz].amount;
+		++sz;
+	}
+	selected_transfers.resize(sz);
+	
+	// compute signature prefix hash
+	std::string prefix_data = message;
+	prefix_data.append((const char*)&keys.address, sizeof(CryptoNote::AccountPublicAddress));
+	
+	std::vector<Crypto::KeyImage> kimages;
+	CryptoNote::KeyPair ephemeral;
+
+	for (size_t i = 0; i < selected_transfers.size(); ++i) {
+
+		// have to repeat this to get key image as we don't store m_key_image
+		// prefix_data.append((const char*)&m_transfers[selected_transfers[i]].m_key_image, sizeof(crypto::key_image));
+		const TransactionOutputInformation &td = selected_transfers[i];
+
+		// derive ephemeral secret key
+		Crypto::KeyImage ki;
+		const bool r = CryptoNote::generate_key_image_helper(m_account.getAccountKeys(), td.transactionPublicKey, td.outputInTransaction, ephemeral, ki);
+		if (!r) {
+			throw std::runtime_error("Failed to generate key image");
+		}
+		// now we can insert key image
+		prefix_data.append((const char*)&ki, sizeof(Crypto::PublicKey));
+		kimages.push_back(ki);
+	}
+
+	Crypto::Hash prefix_hash;
+	Crypto::cn_fast_hash(prefix_data.data(), prefix_data.size(), prefix_hash);
+
+	// generate proof entries
+	std::vector<reserve_proof_entry> proofs(selected_transfers.size());
+	
+	for (size_t i = 0; i < selected_transfers.size(); ++i) {
+		const TransactionOutputInformation &td = selected_transfers[i];
+		reserve_proof_entry& proof = proofs[i];
+		proof.key_image = kimages[i];
+		proof.txid = td.transactionHash;
+		proof.index_in_tx = td.outputInTransaction;
+
+		auto txPubKey = td.transactionPublicKey;
+
+		for (int i = 0; i < 2; ++i)	{
+			Crypto::KeyImage sk = Crypto::scalarmultKey(*reinterpret_cast<const Crypto::KeyImage*>(&txPubKey), *reinterpret_cast<const Crypto::KeyImage*>(&viewSecretKey));
+            proof.shared_secret = *reinterpret_cast<const Crypto::PublicKey *>(&sk);
+
+			Crypto::KeyDerivation derivation;
+			if (!Crypto::generate_key_derivation(proof.shared_secret, viewSecretKey, derivation)) {
+				throw std::runtime_error("Failed to generate key derivation");
+			}
+		}
+
+		// generate signature for shared secret
+		Crypto::generate_tx_proof(prefix_hash, keys.address.viewPublicKey, txPubKey, proof.shared_secret, viewSecretKey, proof.shared_secret_sig);
+
+		// derive ephemeral secret key
+		Crypto::KeyImage ki;
+		CryptoNote::KeyPair ephemeral;
+
+		const bool r = CryptoNote::generate_key_image_helper(m_account.getAccountKeys(), td.transactionPublicKey, td.outputInTransaction, ephemeral, ki);
+		if (!r) {
+			throw std::runtime_error("Failed to generate key image");
+		}
+
+		if (ephemeral.publicKey != td.outputKey) {
+			throw std::runtime_error("Derived public key doesn't agree with the stored one");
+		}
+
+		// generate signature for key image
+		const std::vector<const Crypto::PublicKey *>& pubs = { &ephemeral.publicKey };
+
+		Crypto::generate_ring_signature(prefix_hash, proof.key_image, &pubs[0], 1, ephemeral.secretKey, 0, &proof.key_image_sig);
+	}
+	// generate signature for the spend key that received those outputs
+	Crypto::Signature signature;
+	Crypto::generate_signature(prefix_hash, keys.address.spendPublicKey, keys.spendSecretKey, signature);
+
+	// serialize & encode
+	reserve_proof p;
+	p.proofs.assign(proofs.begin(), proofs.end());
+	memcpy(&p.signature, &signature, sizeof(signature));
+
+	BinaryArray ba = toBinaryArray(p);
+	std::string ret = Common::toHex(ba);
+
+	ret = "ReserveProofV1" + Tools::Base58::encode(ret);
+
+	return ret;
+}
 
 } //namespace CryptoNote

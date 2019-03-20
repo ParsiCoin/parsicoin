@@ -1,22 +1,21 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
 // Copyright (c) 2018, The BBSCoin Developers
 // Copyright (c) 2018, The Karbo Developers
-// Copyright (c) 2018, The ParsiCoin Developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "TransfersConsumer.h"
 
@@ -76,8 +75,6 @@ void findMyOutputs(
 
   size_t keyIndex = 0;
   size_t outputCount = tx.getOutputCount();
-  
-  std::unordered_set<Crypto::PublicKey> public_keys_seen;
 
   for (size_t idx = 0; idx < outputCount; ++idx) {
 
@@ -89,15 +86,8 @@ void findMyOutputs(
       KeyOutput out;
       tx.getOutput(idx, out, amount);
 
-      if (public_keys_seen.find(out.key) != public_keys_seen.end())
-      {
-        throw std::runtime_error("The same transaction pubkey is present more than once");
-      }
-      else {
-        public_keys_seen.insert(out.key);
-        checkOutputKey(derivation, out.key, keyIndex, idx, spendKeys, outputs);
-	  }
-	  ++keyIndex;
+      checkOutputKey(derivation, out.key, keyIndex, idx, spendKeys, outputs);
+      ++keyIndex;
 
     } else if (outType == TransactionTypes::OutputType::Multisignature) {
 
@@ -106,13 +96,7 @@ void findMyOutputs(
       tx.getOutput(idx, out, amount);
 
       for (const auto& key : out.keys) {
-        if (public_keys_seen.find(key) != public_keys_seen.end())
-        {
-          throw std::runtime_error("The same transaction pubkey is present more than once");
-        } else{
-          public_keys_seen.insert(key);
-          checkOutputKey(derivation, key, idx, idx, spendKeys, outputs);
-        }
+        checkOutputKey(derivation, key, idx, idx, spendKeys, outputs);
 
         ++keyIndex;
       }
@@ -150,7 +134,13 @@ ITransfersSubscription& TransfersConsumer::addSubscription(const AccountSubscrip
   if (res.get() == nullptr) {
     res.reset(new TransfersSubscription(m_currency, m_logger.getLogger(), subscription));
     m_spendKeys.insert(subscription.keys.address.spendPublicKey);
-    updateSyncStart();
+    if (m_subscriptions.size() == 1) {
+      m_syncStart = res->getSyncStart();
+    } else {
+      auto subStart = res->getSyncStart();
+      m_syncStart.height = std::min(m_syncStart.height, subStart.height);
+      m_syncStart.timestamp = std::min(m_syncStart.timestamp, subStart.timestamp);
+    }
   }
 
   return *res;

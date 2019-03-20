@@ -1,19 +1,20 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2018, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "IWalletLegacy.h"
 #include "Wallet/WalletErrors.h"
@@ -180,7 +181,7 @@ std::shared_ptr<WalletLegacyEvent> WalletUserTransactionsCache::onTransactionUpd
     transaction.extra.assign(txInfo.extra.begin(), txInfo.extra.end());
     transaction.state = WalletLegacyTransactionState::Active;
     transaction.unlockTime = txInfo.unlockTime;
-	transaction.secretKey = NULL_SECRET_KEY;
+    transaction.secretKey = NULL_SECRET_KEY;
 
     id = insertTransaction(std::move(transaction));
     // notification event
@@ -215,6 +216,7 @@ std::shared_ptr<WalletLegacyEvent> WalletUserTransactionsCache::onTransactionDel
     if (getPaymentIdFromTxExtra(extra, paymentId)) {
       popFromPaymentsIndex(paymentId, id);
     }
+
     tr.blockHeight = WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT;
     tr.timestamp = 0;
     tr.state = WalletLegacyTransactionState::Deleted;

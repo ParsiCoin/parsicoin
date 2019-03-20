@@ -1,19 +1,20 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2018, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "WalletSerializationV1.h"
 
@@ -79,7 +80,7 @@ struct WalletTransactionDto {
     creationTime = wallet.creationTime;
     unlockTime = wallet.unlockTime;
     extra = wallet.extra;
-	if (wallet.secretKey)
+    if (wallet.secretKey)
       secretKey = reinterpret_cast<const Crypto::SecretKey&>(wallet.secretKey.get());
   }
 
@@ -153,6 +154,7 @@ void serialize(WalletTransactionDto& value, CryptoNote::ISerializer& serializer)
   serializer(value.creationTime, "creation_time");
   serializer(value.unlockTime, "unlock_time");
   serializer(value.extra, "extra");
+
   Crypto::SecretKey secretKey = reinterpret_cast<const Crypto::SecretKey&>(value.secretKey.get());
   serializer(secretKey, "secret_key");
   value.secretKey = secretKey;
@@ -269,7 +271,7 @@ void WalletSerializerV1::load(const Crypto::chacha8_key& key, Common::IInputStre
   s.beginObject("wallet");
 
   uint32_t version = loadVersion(source);
-  
+
   CryptoNote::WALLET_LEGACY_SERIALIZATION_VERSION = version;
 
   if (version > SERIALIZATION_VERSION) {
@@ -401,7 +403,6 @@ uint32_t WalletSerializerV1::loadVersion(Common::IInputStream& source) {
 
   uint32_t version = std::numeric_limits<uint32_t>::max();
   s(version, "version");
-
   return version;
 }
 
@@ -640,7 +641,7 @@ void WalletSerializerV1::loadTransactions(Common::IInputStream& source, CryptoCo
     tx.unlockTime = dto.unlockTime;
     tx.extra = dto.extra;
     tx.isBase = false;
-	if (dto.secretKey)
+    if (dto.secretKey)
       tx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(dto.secretKey.get());
 
     m_transactions.get<RandomAccessIndex>().push_back(std::move(tx));

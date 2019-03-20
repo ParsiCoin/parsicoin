@@ -1,20 +1,21 @@
 // Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2014-2016, The Monero Project
 // Copyright (c) 2016-2018, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 #include "CryptoNoteProtocol/CryptoNoteProtocolDefinitions.h"
@@ -22,6 +23,7 @@
 #include "crypto/hash.h"
 #include "Rpc/CoreRpcServerCommandsDefinitions.h"
 #include "WalletRpcServerErrorCodes.h"
+#include "../CryptoNoteConfig.h"
 
 namespace Tools {
 namespace wallet_rpc {
@@ -66,9 +68,9 @@ using CryptoNote::ISerializer;
 		struct request
 		{
 			std::list<transfer_destination> destinations;
-			uint64_t fee;
-			uint64_t mixin;
-			uint64_t unlock_time;
+			uint64_t fee = CryptoNote::parameters::MINIMUM_FEE_V2;
+			uint64_t mixin = 0;
+			uint64_t unlock_time = 0;
 			std::string payment_id;
 
 			void serialize(ISerializer& s)
@@ -298,28 +300,6 @@ using CryptoNote::ISerializer;
 		};
 	};
 
-	struct COMMAND_RPC_CHANGE_PASSWORD
-	{
-		struct request
-		{
-			std::string old_password;
-			std::string new_password;
- 			void serialize(ISerializer& s)
-			{
-				KV_MEMBER(old_password);
-				KV_MEMBER(new_password);
-			}
-		};
- 		struct response
-		{
-			bool password_changed;
- 			void serialize(ISerializer& s)
-			{
-				KV_MEMBER(password_changed);
-			}
-		};
-	};
-	
 	/* Command: get_tx_key */
 	struct COMMAND_RPC_GET_TX_KEY
 	{
@@ -342,21 +322,7 @@ using CryptoNote::ISerializer;
 			}
 		};
 	};
-	
-	struct COMMAND_RPC_GET_OUTPUTS
-    {
-      typedef CryptoNote::EMPTY_STRUCT request;
 
-      struct response
-      {
-        size_t unlocked_outputs_count;
-
-        void serialize(ISerializer& s) {
-          KV_MEMBER(unlocked_outputs_count)
-        }
-      };
-    };
-	
 	struct COMMAND_RPC_SIGN_MESSAGE
 	{
 		struct request
@@ -406,7 +372,98 @@ using CryptoNote::ISerializer;
 			}
 		};
 	};
-	
+
+	struct COMMAND_RPC_CHANGE_PASSWORD
+	{
+		struct request
+		{
+			std::string old_password;
+			std::string new_password;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(old_password);
+				KV_MEMBER(new_password);
+			}
+		};
+
+		struct response
+		{
+			bool password_changed;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(password_changed);
+			}
+		};
+	};
+
+	struct COMMAND_RPC_GET_OUTPUTS
+    {
+      typedef CryptoNote::EMPTY_STRUCT request;
+
+      struct response
+      {
+        size_t unlocked_outputs_count;
+
+        void serialize(ISerializer& s) {
+          KV_MEMBER(unlocked_outputs_count)
+        }
+      };
+    };
+
+	struct COMMAND_RPC_GET_TX_PROOF
+	{
+		struct request
+		{
+			std::string tx_hash;
+			std::string dest_address;
+			std::string tx_key;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(tx_hash);
+				KV_MEMBER(dest_address);
+				KV_MEMBER(tx_key);
+			}
+		};
+
+		struct response
+		{
+			std::string signature;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(signature);
+			}
+		};
+	};
+
+	struct COMMAND_RPC_GET_BALANCE_PROOF
+	{
+		struct request
+		{
+			uint64_t amount = 0;
+			std::string message;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(amount);
+				KV_MEMBER(message);
+			}
+		};
+
+		struct response
+		{
+			std::string signature;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(signature);
+			}
+		};
+	};
+
 	struct COMMAND_RPC_VALIDATE_ADDRESS {
 		struct request {
 			std::string address;
@@ -432,5 +489,55 @@ using CryptoNote::ISerializer;
 			}
 		};
 	};
-	
+
+	/* Fusion transactions */
+
+	struct COMMAND_RPC_ESTIMATE_FUSION
+	{
+		struct request
+		{
+			uint64_t threshold;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(threshold)
+			}
+		};
+
+		struct response
+		{
+			size_t fusion_ready_count;
+
+			void serialize(ISerializer& s) {
+				KV_MEMBER(fusion_ready_count)
+			}
+		};
+	};
+
+	struct COMMAND_RPC_SEND_FUSION
+	{
+		struct request
+		{
+			uint64_t mixin = 0;
+			uint64_t threshold;
+			uint64_t unlock_time = 0;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(mixin)
+				KV_MEMBER(threshold)
+				KV_MEMBER(unlock_time)
+			}
+		};
+		struct response
+		{
+			std::string tx_hash;
+
+			void serialize(ISerializer& s)
+			{
+				KV_MEMBER(tx_hash)
+			}
+		};
+	};
+
 }} //Tools::wallet_rpc

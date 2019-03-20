@@ -1,19 +1,20 @@
-// Copyright (c) 2012-2016, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2012-2017, The CryptoNote developers, The Bytecoin developers
+// Copyright (c) 2018-2019, Karbo developers
 //
-// This file is part of Bytecoin.
+// This file is part of Karbo.
 //
-// Bytecoin is free software: you can redistribute it and/or modify
+// Karbo is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Bytecoin is distributed in the hope that it will be useful,
+// Karbo is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with Bytecoin.  If not, see <http://www.gnu.org/licenses/>.
+// along with Karbo.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -30,6 +31,7 @@
 #include <System/Event.h>
 #include "Transfers/TransfersSynchronizer.h"
 #include "Transfers/BlockchainSynchronizer.h"
+#include "../CryptoNoteConfig.h"
 
 namespace CryptoNote {
 
@@ -39,7 +41,7 @@ class WalletGreen : public IWallet,
                     ITransfersSynchronizerObserver,
                     public IFusionManager {
 public:
-  WalletGreen(System::Dispatcher& dispatcher, const Currency& currency, INode& node, Logging::ILogger& logger, uint32_t transactionSoftLockTime = 1);
+  WalletGreen(System::Dispatcher& dispatcher, const Currency& currency, INode& node, Logging::ILogger& logger, uint32_t transactionSoftLockTime = CryptoNote::parameters::CRYPTONOTE_TX_SPENDABLE_AGE);
   virtual ~WalletGreen();
 
   virtual void initialize(const std::string& path, const std::string& password) override;
@@ -55,12 +57,14 @@ public:
 
   virtual size_t getAddressCount() const override;
   virtual std::string getAddress(size_t index) const override;
+  virtual AccountPublicAddress getAccountPublicAddress(size_t index) const override;
   virtual KeyPair getAddressSpendKey(size_t index) const override;
   virtual KeyPair getAddressSpendKey(const std::string& address) const override;
   virtual KeyPair getViewKey() const override;
   virtual std::string createAddress() override;
   virtual std::string createAddress(const Crypto::SecretKey& spendSecretKey, bool reset = true) override;
   virtual std::string createAddress(const Crypto::PublicKey& spendPublicKey) override;
+  virtual std::vector<std::string> createAddressList(const std::vector<Crypto::SecretKey>& spendSecretKeys, bool reset = true) override;
   virtual std::string createAddressWithTimestamp(const Crypto::SecretKey& spendSecretKey, const uint64_t& creationTimestamp) override;
   virtual void deleteAddress(const std::string& address) override;
 
@@ -82,6 +86,7 @@ public:
   virtual uint32_t getBlockCount() const override;
   virtual std::vector<WalletTransactionWithTransfers> getUnconfirmedTransactions() const override;
   virtual std::vector<size_t> getDelayedTransactionIds() const override;
+  virtual std::vector<TransactionOutputInformation> getTransfers(size_t index, uint32_t flags) const override;
 
   virtual size_t transfer(const TransactionParameters& sendingTransaction, Crypto::SecretKey& txSecretKey) override;
 
@@ -99,6 +104,12 @@ public:
   virtual IFusionManager::EstimateResult estimate(uint64_t threshold, const std::vector<std::string>& sourceAddresses = {}) const override;
 
 protected:
+  struct NewAddressData {
+    Crypto::PublicKey spendPublicKey;
+    Crypto::SecretKey spendSecretKey;
+    uint64_t creationTimestamp;
+  };
+
   void throwIfNotInitialized() const;
   void throwIfStopped() const;
   void throwIfTrackingMode() const;
@@ -117,6 +128,7 @@ protected:
   void initWithKeys(const std::string& path, const std::string& password, const Crypto::PublicKey& viewPublicKey, const Crypto::SecretKey& viewSecretKey);
   void initWithKeysAndTimestamp(const std::string& path, const std::string& password, const Crypto::PublicKey& viewPublicKey, const Crypto::SecretKey& viewSecretKey, const uint64_t& _creationTimestamp);
   std::string doCreateAddress(const Crypto::PublicKey& spendPublicKey, const Crypto::SecretKey& spendSecretKey, uint64_t creationTimestamp);
+  std::vector<std::string> doCreateAddressList(const std::vector<NewAddressData>& addressDataList);
 
   struct InputInfo {
     TransactionTypes::InputKeyInfo keyInfo;
@@ -286,7 +298,7 @@ protected:
   void addUnconfirmedTransaction(const ITransactionReader& transaction);
   void removeUnconfirmedTransaction(const Crypto::Hash& transactionHash);
 
-  static void copyContainerStorageKeys(ContainerStorage& src, const Crypto::chacha8_key& srcKey, ContainerStorage& dst, const Crypto::chacha8_key& dstKey);
+  void copyContainerStorageKeys(ContainerStorage& src, const Crypto::chacha8_key& srcKey, ContainerStorage& dst, const Crypto::chacha8_key& dstKey);
   static void copyContainerStoragePrefix(ContainerStorage& src, const Crypto::chacha8_key& srcKey, ContainerStorage& dst, const Crypto::chacha8_key& dstKey);
   void deleteOrphanTransactions(const std::unordered_set<Crypto::PublicKey>& deletedKeys);
   static void encryptAndSaveContainerData(ContainerStorage& storage, const Crypto::chacha8_key& key, const void* containerData, size_t containerDataSize);
