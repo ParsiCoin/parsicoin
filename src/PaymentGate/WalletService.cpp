@@ -49,7 +49,7 @@
 #include "Wallet/WalletUtils.h"
 #include "WalletServiceErrorCategory.h"
 #include "ITransfersContainer.h"
-#include "Mnemonics/electrum-words.cpp"
+#include "mnemonics/electrum-words.cpp"
 
 using namespace CryptoNote;
 
