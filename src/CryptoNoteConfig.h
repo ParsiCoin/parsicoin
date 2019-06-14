@@ -182,6 +182,7 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {30000,	"aea4027bc9bd0bdacbc541286ee732dd2c541445a4cab2231ef03cb17812933a" },
   {40000,	"8ef378217b20e0570e3457be275c7600b82a8de52f73d2f8970c338ece869829" },
   {50000,	"1da4964d42c063a491aebd2ca9ef9e0bdbcc4cbee31bf3d5c633daccdbbb59f5" },
+  {60000,	"dc8a14fc8b039285dedbca628699608fb0bdbe1a8e3637a642005167308765ce" },
 };
 
 } // CryptoNote
