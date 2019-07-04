@@ -157,9 +157,11 @@ const uint32_t P2P_IDLE_CONNECTION_KILL_INTERVAL             = (5 * 60);      //
 const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1510d12436238debfee9c918ce605efe225d8c94d045fa115";
 
 const char* const SEED_NODES[] = {
+  "parsicoin.net:17240",
   "explorer.parsicoin.net:17240",
   "wallet.parsicoin.net:17240",
   "pool.parsicoin.net:17240",
+  "35.192.191.240:17240",
   "parsira6m254ek3u.onion:17240"
 };
 
