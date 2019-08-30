@@ -161,7 +161,7 @@ const char* const SEED_NODES[] = {
   "explorer.parsicoin.net:17240",
   "wallet.parsicoin.net:17240",
   "pool.parsicoin.net:17240",
-  "35.192.191.240:17240",
+  "node.parsicoin.net:17240",
   "parsira6m254ek3u.onion:17240"
 };
 
@@ -183,6 +183,8 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {40000,	"8ef378217b20e0570e3457be275c7600b82a8de52f73d2f8970c338ece869829" },
   {50000,	"1da4964d42c063a491aebd2ca9ef9e0bdbcc4cbee31bf3d5c633daccdbbb59f5" },
   {60000,	"dc8a14fc8b039285dedbca628699608fb0bdbe1a8e3637a642005167308765ce" },
+  {80000,	"a9dd56361bb8e39f26005107ca022230e06a406ad30fea6bc5b0b3e9faaeb0b3" },
+  {100000,	"fc12c3739f0973db5c0fcba1b9ab571c1a5f800cc64cf4c6a4d7ce42ed1a2bae" },
 };
 
 } // CryptoNote
