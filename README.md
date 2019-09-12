@@ -18,15 +18,15 @@ http://www.boost.org/
 
 Alternatively, it may be possible to install them using a package manager.
 
-To build, change to a directory where this file is located, and run `make'. The resulting executables can be found in build/release/src.
+To build, change to a directory where this file is located, and run ```make```. The resulting executables can be found in build/release/src.
 
 Advanced options:
 
-Parallel build: run `make -j<number of threads>' instead of `make'.
+Parallel build: run ```make -j<number of threads>``` instead of ```make```.
 
-Debug build: run `make build-debug'.
+Debug build: run ```make build-debug```.
 
-Test suite: run `make test-release' to run tests in addition to building. Running `make test-debug' will do the same to the debug version.
+Test suite: run ```make test-release``` to run tests in addition to building. Running ```make test-debug``` will do the same to the debug version.
 
 
 On Windows:
@@ -41,7 +41,9 @@ http://www.boost.org/
 
 To build, change to a directory where this file is located, and run this commands: (VisualStudio 2015)
 
+```
 mkdir build && cd build && cmake .. -G "Visual Studio 14 Win64" ..
+```
 
 open ParsiCoin.sln File on Visual Studio
 
