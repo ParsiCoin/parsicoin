@@ -162,6 +162,8 @@ const char* const SEED_NODES[] = {
   "wallet.parsicoin.net:17240",
   "pool.parsicoin.net:17240",
   "node.parsicoin.net:17240",
+  "91.92.128.210:17240",
+  "185.203.116.107:17240",
   "parsira6m254ek3u.onion:17240"
 };
 

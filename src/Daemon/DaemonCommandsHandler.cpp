@@ -124,7 +124,7 @@ bool DaemonCommandsHandler::status(const std::vector<std::string>& args) {
   size_t incoming_connections_count = total_conn - outgoing_connections_count;
   size_t white_peerlist_size = m_srv.getPeerlistManager().get_white_peers_count();
   size_t grey_peerlist_size = m_srv.getPeerlistManager().get_gray_peers_count();
-  uint64_t hashrate = (uint32_t)round(difficulty / CryptoNote::parameters::DIFFICULTY_TARGET);
+  uint32_t hashrate = (uint32_t) round(difficulty / CryptoNote::parameters::DIFFICULTY_TARGET);
   std::time_t uptime = std::time(nullptr) - m_core.getStartTime();
   uint8_t majorVersion = m_core.getBlockMajorVersionForHeight(height);
   bool synced = ((uint32_t)height == (uint32_t)last_known_block_index);
@@ -137,7 +137,8 @@ bool DaemonCommandsHandler::status(const std::vector<std::string>& args) {
     << "network hashrate: " << get_mining_speed(hashrate) << ", next difficulty: " << difficulty << ", "
     << "block v. " << (int)majorVersion << ", alt. blocks: " << alt_block_count << ", "
     << outgoing_connections_count << " out. + " << incoming_connections_count << " inc. connection(s), "
-    << rpc_conn <<  " rpc connection(s), " << tx_pool_size << " transaction(s) in mempool, "
+    << rpc_conn <<  " rpc connection(s), " << "peers: " << white_peerlist_size << " white / " << grey_peerlist_size << " grey, "
+    << tx_pool_size << " transaction(s) in mempool, "
     << "uptime: " << (unsigned int)floor(uptime / 60.0 / 60.0 / 24.0) << "d " << (unsigned int)floor(fmod((uptime / 60.0 / 60.0), 24.0)) << "h "
     << (unsigned int)floor(fmod((uptime / 60.0), 60.0)) << "m " << (unsigned int)fmod(uptime, 60.0) << "s"
     << std::endl;
@@ -416,6 +417,7 @@ bool DaemonCommandsHandler::ban(const std::vector<std::string>& args)
     try {
       seconds = std::stoi(args[1]);
     } catch (const std::exception &e) {
+	  std::cout << "Incorrect time value: " << e.what() << std::endl;
       return false;
     }
     if (seconds == 0) {
@@ -425,6 +427,7 @@ bool DaemonCommandsHandler::ban(const std::vector<std::string>& args)
   try {
     ip = Common::stringToIpAddress(addr);
   } catch (const std::exception &e) {
+	 std::cout << "Incorrect IP value: " << e.what() << std::endl;
      return false;
   }
   return m_srv.ban_host(ip, seconds);
@@ -437,7 +440,8 @@ bool DaemonCommandsHandler::unban(const std::vector<std::string>& args)
   uint32_t ip;
   try {
     ip = Common::stringToIpAddress(addr);
-  }	catch (const std::exception &e) {
+  } catch (const std::exception &e) {
+    std::cout << "Incorrect IP value: " << e.what() << std::endl;
     return false;
   }
   return m_srv.unban_host(ip);

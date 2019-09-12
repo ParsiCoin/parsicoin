@@ -50,7 +50,7 @@ struct COMMAND_RPC_GET_HEIGHT {
   typedef EMPTY_STRUCT request;
 
   struct response {
-    uint64_t height;
+    uint32_t height;
     std::string status;
 
     void serialize(ISerializer &s) {
@@ -274,7 +274,7 @@ struct COMMAND_RPC_GET_INFO {
   struct response {
     std::string status;
     std::string version;
-    uint64_t height;
+    uint32_t height;
     std::string top_block_hash;
     uint64_t difficulty;
     uint64_t min_tx_fee;
@@ -443,8 +443,8 @@ struct block_header_response {
   std::string prev_hash;
   uint32_t nonce;
   bool orphan_status;
-  uint64_t height;
-  uint64_t depth;
+  uint32_t height;
+  uint32_t depth;
   std::string hash;
   difficulty_type difficulty;
   uint64_t reward;
@@ -578,7 +578,7 @@ struct f_block_details_response {
   std::string prev_hash;
   uint32_t nonce;
   bool orphan_status;
-  uint64_t height;
+  uint32_t height;
   uint64_t depth;
   std::string hash;
   difficulty_type difficulty;
@@ -640,7 +640,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HASH {
 
 struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HEIGHT {
   struct request {
-    uint64_t height;
+    uint32_t height;
 
     void serialize(ISerializer &s) {
       KV_MEMBER(height)
@@ -652,7 +652,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HEIGHT {
 
 struct F_COMMAND_RPC_GET_BLOCKS_LIST {
   struct request {
-    uint64_t height;
+    uint32_t height;
 
     void serialize(ISerializer &s) {
       KV_MEMBER(height)

@@ -2446,8 +2446,7 @@ bool simple_wallet::verify_message(const std::vector<std::string> &args) {
     fail_msg_writer() << ("Signature decoding error");
     return false;
   }
-  Crypto::Signature s;
-  if (sizeof(s) != decoded.size()) {
+  if (sizeof(Crypto::Signature) != decoded.size()) {
     fail_msg_writer() << ("Signature decoding error");
     return false;
   }
