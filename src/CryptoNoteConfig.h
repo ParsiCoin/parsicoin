@@ -119,6 +119,7 @@ const char     MINER_CONFIG_FILE_NAME[]                      = "parsminer_conf.j
 
 const char     CRYPTONOTE_NAME[]                             = "parsicoin";
 const char     GENESIS_COINBASE_TX_HEX[]                     = "010a01ff000180b0def7d32b029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd0880712101b9adb0201fc3edba8aff318ea742d500af27134c23e5dc7882ed700c062aea7d";
+const char     DNS_CHECKPOINTS_URL[]                        = "checkpoints.parsicoin.net";
 
 const uint8_t  CURRENT_TRANSACTION_VERSION                   =  1;
 const uint8_t  BLOCK_MAJOR_VERSION_1                         =  1;
