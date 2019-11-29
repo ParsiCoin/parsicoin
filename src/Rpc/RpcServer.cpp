@@ -1788,13 +1788,10 @@ bool RpcServer::k_on_check_reserve_proof(const K_COMMAND_RPC_CHECK_RESERVE_PROOF
 	// check spent status
 	res.total = 0;
 	res.spent = 0;
-	res.locked = 0;
 	for (size_t i = 0; i < proofs.size(); ++i) {
 		const reserve_proof_entry& proof = proofs[i];
 
 		CryptoNote::TransactionPrefix tx = *static_cast<const TransactionPrefix*>(&transactions[i]);
-
-		bool unlocked = m_core.is_tx_spendtime_unlocked(tx.unlockTime, req.height);
 
 		if (proof.index_in_tx >= tx.outputs.size()) {
 			throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_INTERNAL_ERROR, "index_in_tx is out of bound" };
@@ -1832,10 +1829,6 @@ bool RpcServer::k_on_check_reserve_proof(const K_COMMAND_RPC_CHECK_RESERVE_PROOF
 				uint64_t amount = tx.outputs[proof.index_in_tx].amount;
 				res.total += amount;
 
-				if (!unlocked) {
-					res.locked += amount;
-				}
-
 				if (m_core.is_key_image_spent(proof.key_image)) {
 					res.spent += amount;
 				}
@@ -1855,7 +1848,6 @@ bool RpcServer::k_on_check_reserve_proof(const K_COMMAND_RPC_CHECK_RESERVE_PROOF
 		return true;
 	}
 
-	res.good = true;
 	return true;
 }
 
