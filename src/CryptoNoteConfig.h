@@ -161,6 +161,7 @@ const char* const SEED_NODES[] = {
   "parsicoin.net:17240",
   "explorer.parsicoin.net:17240",
   "node.parsicoin.net:17240",
+  "eu.parsicoin.net:17240",
   "us.parsicoin.net:17240",
   "ir.parsicoin.net:17240",
   "91.92.128.210:17240",
