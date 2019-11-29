@@ -175,6 +175,9 @@ namespace CryptoNote {
 
      bool fillTxExtra(const std::vector<uint8_t>& rawExtra, TransactionExtraDetails2& extraDetails);
 
+	 bool is_tx_spendtime_unlocked(uint64_t unlock_time);
+     bool is_tx_spendtime_unlocked(uint64_t unlock_time, uint32_t height);
+
    private:
      bool add_new_tx(const Transaction& tx, const Crypto::Hash& tx_hash, size_t blob_size, tx_verification_context& tvc, bool keeped_by_block);
      bool load_state_data();
@@ -192,7 +195,6 @@ namespace CryptoNote {
 	 bool check_tx_unmixable(const Transaction& tx, uint32_t height);
 
      bool check_tx_ring_signature(const KeyInput& tx, const Crypto::Hash& tx_prefix_hash, const std::vector<Crypto::Signature>& sig);
-     bool is_tx_spendtime_unlocked(uint64_t unlock_time);
      bool update_miner_block_template();
      bool handle_command_line(const boost::program_options::variables_map& vm);
      bool on_update_blocktemplate_interval();

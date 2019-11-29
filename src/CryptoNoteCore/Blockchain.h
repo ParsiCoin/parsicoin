@@ -199,6 +199,9 @@ namespace CryptoNote {
     void rollbackBlockchainTo(uint32_t height);
 	bool have_tx_keyimg_as_spent(const Crypto::KeyImage &key_im);
 
+	bool is_tx_spendtime_unlocked(uint64_t unlock_time);
+    bool is_tx_spendtime_unlocked(uint64_t unlock_time, uint32_t height);
+
   private:
 
     struct MultisignatureOutputUsage {
@@ -298,7 +301,6 @@ namespace CryptoNote {
     bool rollback_blockchain_switching(std::list<Block>& original_chain, size_t rollback_height);
     bool get_last_n_blocks_sizes(std::vector<size_t>& sz, size_t count);
     bool add_out_to_get_random_outs(std::vector<std::pair<TransactionIndex, uint16_t>>& amount_outs, COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS_outs_for_amount& result_outs, uint64_t amount, size_t i);
-    bool is_tx_spendtime_unlocked(uint64_t unlock_time);
     size_t find_end_of_allowed_index(const std::vector<std::pair<TransactionIndex, uint16_t>>& amount_outs);
     bool check_block_timestamp_main(const Block& b);
     bool check_block_timestamp(std::vector<uint64_t> timestamps, const Block& b);
