@@ -159,14 +159,14 @@ const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1
 
 const char* const SEED_NODES[] = {
   "parsicoin.net:17240",
-  "explorer.parsicoin.net:17240",
   "node.parsicoin.net:17240",
   "eu.parsicoin.net:17240",
   "us.parsicoin.net:17240",
   "ir.parsicoin.net:17240",
-  "91.92.128.210:17240",
+  "78.47.138.249:17240",
+  "104.238.214.143:17240",
   "91.92.128.198:17240",
-  "185.203.116.107:17240",
+  "185.237.96.204:17240",
   "185.105.186.102:17240",
   "parsira6m254ek3u.onion:17240"
 };
