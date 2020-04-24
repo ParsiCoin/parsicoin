@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <unordered_map>
 #include <random>
 
