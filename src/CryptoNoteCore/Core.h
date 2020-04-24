@@ -166,6 +166,8 @@ namespace CryptoNote {
                                  std::vector<Crypto::Hash>& deletedTxsIds) override;
 
 	 virtual void rollbackBlockchain(uint32_t height) override;
+	 
+	 virtual bool saveBlockchain() override;
 
      uint64_t getNextBlockDifficulty();
      uint64_t getTotalGeneratedAmount();
