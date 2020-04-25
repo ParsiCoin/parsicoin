@@ -1019,6 +1019,11 @@ bool core::scanOutputkeysForIndices(const KeyInput& txInToKey, std::list<std::pa
   return m_blockchain.scanOutputKeysForIndexes(txInToKey, vi);
 }
 
+bool Core::getBlockTimestamp(uint32_t height, uint64_t& timestamp) {
+  timestamp = m_blockchain.getBlockTimestamp(height);
+  return true;
+}
+
 bool core::getBlockDifficulty(uint32_t height, difficulty_type& difficulty) {
   difficulty = m_blockchain.blockDifficulty(height);
   return true;
