@@ -1079,7 +1079,7 @@ bool simple_wallet::init(const boost::program_options::variables_map& vm)
 		}
 	}
 
-	if (command_line::has_arg(vm, arg_change_password) && command_line::has_arg(vm, arg_password) && !m_wallet_file_arg.empty())
+	else if (command_line::has_arg(vm, arg_change_password) && command_line::has_arg(vm, arg_password) && !m_wallet_file_arg.empty())
 	{
 		m_wallet.reset(new WalletLegacy(m_currency, *m_node, m_logManager));
 		pwd_container.password(command_line::get_arg(vm, arg_password));
@@ -1113,7 +1113,7 @@ bool simple_wallet::init(const boost::program_options::variables_map& vm)
 		return true;
 	}
 
-	if (!m_generate_new.empty())
+	else if (!m_generate_new.empty())
 	{
 		std::string walletAddressFile = prepareWalletAddressFilename(m_generate_new);
 		boost::system::error_code ignore;
@@ -1452,7 +1452,7 @@ bool simple_wallet::new_wallet(const std::string &wallet_file, const std::string
 {
 	m_wallet_file = wallet_file;
 
-	m_wallet.reset(new WalletLegacy(m_currency, *m_node.get(), m_logManager));
+	m_wallet.reset(new WalletLegacy(m_currency, *m_node, m_logManager));
 	m_node->addObserver(static_cast<INodeObserver*>(this));
 	m_wallet->addObserver(this);
 
@@ -1526,7 +1526,7 @@ bool simple_wallet::new_wallet(const std::string &wallet_file, const std::string
 bool simple_wallet::new_wallet(Crypto::SecretKey &secret_key, Crypto::SecretKey &view_key, const std::string &wallet_file, const std::string& password) {
   m_wallet_file = wallet_file;
 
-  m_wallet.reset(new WalletLegacy(m_currency, *m_node.get(), m_logManager));
+  m_wallet.reset(new WalletLegacy(m_currency, *m_node, m_logManager));
   m_node->addObserver(static_cast<INodeObserver*>(this));
   m_wallet->addObserver(this);
   try {
@@ -1579,7 +1579,7 @@ bool simple_wallet::new_wallet(Crypto::SecretKey &secret_key, Crypto::SecretKey 
 bool simple_wallet::new_wallet(AccountKeys &private_key, const std::string &wallet_file, const std::string& password) {
     m_wallet_file = wallet_file;
 
-    m_wallet.reset(new WalletLegacy(m_currency, *m_node.get(), m_logManager));
+    m_wallet.reset(new WalletLegacy(m_currency, *m_node, m_logManager));
     m_node->addObserver(static_cast<INodeObserver*>(this));
     m_wallet->addObserver(this);
     try {
