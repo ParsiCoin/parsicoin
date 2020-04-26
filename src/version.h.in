@@ -2,9 +2,9 @@
 #define STR(x) STR_HELPER(x)
 #define PROJECT_NAME "ParsiCoin"
 #define PROJECT_SITE "https://parsicoin.net"
-#define PROJECT_COPYRIGHT "Copyright 2018-2019, ParsiCoin Developers"
+#define PROJECT_COPYRIGHT "Copyright 2018-2020, ParsiCoin Developers"
 #define APP_VER_MAJOR 3
-#define APP_VER_MINOR 2
+#define APP_VER_MINOR 3
 #define APP_VER_REV 0
 #define BUILD_COMMIT_ID "Stable"
 #define PROJECT_VERSION STR(APP_VER_MAJOR) "." STR(APP_VER_MINOR) "." STR(APP_VER_REV)
