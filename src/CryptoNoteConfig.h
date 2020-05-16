@@ -158,16 +158,12 @@ const uint32_t P2P_IDLE_CONNECTION_KILL_INTERVAL             = (5 * 60);      //
 const char     P2P_STAT_TRUSTED_PUB_KEY[]                    = "8f80f9a5a434a9f1510d12436238debfee9c918ce605efe225d8c94d045fa115";
 
 const char* const SEED_NODES[] = {
-  "parsicoin.net:17240",
   "node.parsicoin.net:17240",
+  "pool.parsicoin.net:17240",
   "eu.parsicoin.net:17240",
   "us.parsicoin.net:17240",
   "ir.parsicoin.net:17240",
-  "cloudflare1.parsicoin.net:17240",
-  "cloudflare2.parsicoin.net:17240",
-  "eu.pars:17240",
-  "ir.pars:17240",
-  "78.47.138.249:17240",
+  "dns.parsicoin.net:17240",
   "91.92.128.198:17240",
   "parsira6m254ek3u.onion:17240"
 };
@@ -193,6 +189,7 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {180000,	"1be674a89d4a81a9e53f85cf01bd9f024509684d043729ab414ea3bf519b94e0" },
   {210000,	"02a685509928899bfffde1e6d7c2ab1f3b19f287333e548d2a1a13ea914adf9a" },
   {240000,	"1d46d69e7dfdae9979224eda80e9a0fcb5ae994ae3daee7e1bb3e520c3e0387d" },
+  {270000,	"7d54182a3b836cf41e3e2a74b3501c6fdef3848b1b97d06cbecf46b0eff0143d" },
 };
 
 } // CryptoNote
