@@ -3,7 +3,7 @@
 // Copyright (c) 2014-2018, The Forknote developers
 // Copyright (c) 2018, Ryo Currency Project
 // Copyright (c) 2016-2018, The Karbowanec developers
-// Copyright (c) 2018-2019, The ParsiCoin developers
+// Copyright (c) 2018-2020, The ParsiCoin developers
 //
 // This file is part of Karbo.
 //
@@ -165,7 +165,7 @@ const char* const SEED_NODES[] = {
   "us.parsicoin.net:17240",
   "ir.parsicoin.net:17240",
   "49.12.79.1:17240",
-  "91.92.128.198:17240",
+  "49.12.75.23:17240",
   "parsira6m254ek3u.onion:17240"
 };
 
@@ -191,6 +191,7 @@ const std::initializer_list<CheckpointData> CHECKPOINTS = {
   {210000,	"02a685509928899bfffde1e6d7c2ab1f3b19f287333e548d2a1a13ea914adf9a" },
   {240000,	"1d46d69e7dfdae9979224eda80e9a0fcb5ae994ae3daee7e1bb3e520c3e0387d" },
   {270000,	"7d54182a3b836cf41e3e2a74b3501c6fdef3848b1b97d06cbecf46b0eff0143d" },
+  {300000,	"c65a24db1770fb93576a393dfe1754c35865bcef0d7b459628a20eb7fc4349ff" },
 };
 
 } // CryptoNote
